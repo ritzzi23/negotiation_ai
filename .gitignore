@@ -1,0 +1,130 @@
+# ==========================================
+# ENVIRONMENT & SECRETS
+# ==========================================
+.env
+.env*.local
+*.pem
+
+# ==========================================
+# PYTHON (Backend)
+# ==========================================
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+
+# Distribution / Build
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Package managers
+poetry.lock
+Pipfile.lock
+
+# Type checkers
+.mypy_cache/
+.pytype/
+
+# ==========================================
+# JAVASCRIPT / NEXT.JS (Frontend)
+# ==========================================
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+
+# Build artifacts
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Vercel
+.vercel
+
+# SWC
+.swc/
+
+# ==========================================
+# DATABASE & LOGS
+# ==========================================
+
+# Database files
+backend/data/*.db
+backend/data/*.sqlite
+backend/data/*.sqlite3
+backend/data/*.db-shm
+backend/data/*.db-wal
+
+# Application logs
+backend/data/logs/
+*.log
+
+# ==========================================
+# IDEs & EDITORS
+# ==========================================
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains (PyCharm, WebStorm, IntelliJ)
+.idea/
+*.iml
+
+# ==========================================
+# OPERATING SYSTEMS
+# ==========================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+
+# ==========================================
+# TEMPORARY FILES
+# ==========================================
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+*.swp

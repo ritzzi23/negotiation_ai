@@ -1,0 +1,30 @@
+# DealForge - Real-Time Deal Negotiator
+# Backend dependencies
+
+# FastAPI and server
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+
+# HTTP client
+httpx>=0.25.1
+
+# SSE support
+sse-starlette>=1.8.2
+
+# Database
+sqlalchemy[asyncio]>=2.0.23
+aiosqlite>=0.19.0
+
+# Config and validation
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Utilities
+python-dotenv>=1.0.0
+
+# PDF generation (for contract generation)
+reportlab>=4.0.0
+
+# RAG: embeddings and vector store
+sentence-transformers>=2.2.0
+numpy>=1.24.0
