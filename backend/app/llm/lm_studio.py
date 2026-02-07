@@ -5,6 +5,7 @@ WHAT: Local LLM inference via LM Studio with streaming support
 WHY: Enable local-first inference without external API dependencies
 HOW: HTTPX client with retries, SSE parsing, OpenAI-compatible API
 """
+from __future__ import annotations
 
 import httpx
 import json

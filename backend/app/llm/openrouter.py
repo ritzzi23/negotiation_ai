@@ -5,6 +5,7 @@ WHAT: External LLM provider via OpenRouter API
 WHY: Cloud-based models when local inference insufficient
 HOW: OpenAI-compatible API with authorization headers, retry logic, SSE streaming
 """
+from __future__ import annotations
 
 import asyncio
 import httpx

@@ -5,6 +5,7 @@ WHAT: Abstract interface for LLM providers
 WHY: Decouple calling code from specific provider implementations
 HOW: Use Protocol to define async methods for ping, generate, and stream
 """
+from __future__ import annotations
 
 from typing import Protocol, AsyncIterator
 from .types import ChatMessage, LLMResult, TokenChunk, ProviderStatus

@@ -6,7 +6,7 @@ WHY: Ensure consistent contracts across all providers
 HOW: TypedDict for messages, dataclasses for results/status, custom exceptions for errors
 """
 
-from typing import TypedDict, Literal
+from typing import TypedDict, Literal, Optional, List
 from dataclasses import dataclass
 
 
@@ -38,8 +38,8 @@ class ProviderStatus:
     """Health status of an LLM provider."""
     available: bool
     base_url: str
-    models: list[str] | None = None
-    error: str | None = None
+    models: Optional[List[str]] = None
+    error: Optional[str] = None
 
 
 # Provider exceptions

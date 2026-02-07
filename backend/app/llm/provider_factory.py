@@ -5,6 +5,7 @@ WHAT: Factory to get the configured LLM provider
 WHY: Centralize provider selection and avoid multiple instances
 HOW: Read LLM_PROVIDER from config, cache singleton, log selection
 """
+from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, Literal
 
