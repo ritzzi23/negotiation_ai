@@ -263,3 +263,12 @@ MIT License - See [LICENSE](LICENSE) file.
 ---
 
 **Built for the Snapdragon Multiverse Hackathon 2026 at Columbia University**
+
+
+
+cd backend
+source venv/bin/activate
+PYTHONPATH=. python migrate_add_custom_prompt.py
+PYTHONPATH=. python migrate_add_product_catalog.py
+PYTHONPATH=. python migrate_add_product_variants.py
+PYTHONPATH=. python migrate_add_provider.py
