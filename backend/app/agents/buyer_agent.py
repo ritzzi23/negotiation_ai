@@ -28,7 +28,7 @@ class BuyerAgent:
         provider: LLMProvider,
         constraints: BuyerConstraints,
         *,
-        temperature: float = 0.0,
+        temperature: float = 0.7,
         max_tokens: int = 1024
     ):
         """

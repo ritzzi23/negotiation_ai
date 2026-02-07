@@ -38,6 +38,7 @@ def to_product_response(product: Product) -> ProductResponse:
         size_unit=product.size_unit,
         category=product.category,
         description=product.description,
+        image_url=product.image_url,
         created_at=product.created_at,
     )
 

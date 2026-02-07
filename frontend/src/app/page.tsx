@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useSession } from '@/store/sessionStore';
 import { Button } from '@/components/Button';
+import { TerminalTypingText } from '@/components/TerminalTypingText';
 import { ROUTES } from '@/lib/router';
 
 const previewCopy = {
@@ -28,8 +29,8 @@ const previewCopy = {
 } as const;
 
 export default function LandingPage() {
-  const { session } = useSession();
-  const hasSession = !!session?.session_id;
+  const { sessionId } = useSession();
+  const hasSession = !!sessionId;
   const [activePreview, setActivePreview] = useState<'buyer' | 'seller' | 'admin'>('buyer');
 
   return (
@@ -42,7 +43,15 @@ export default function LandingPage() {
               <h1 className="mt-4 text-4xl md:text-[3.6rem] leading-[1.05] font-display tracking-tight text-neutral-900">
                 Your AI negotiates.
                 <br />
-                You get the best deal.
+                <span className="inline-block min-h-[1.1em]">
+                  <TerminalTypingText
+                    text={['You get the best deal.', 'You save more, effortlessly.', 'You sit back. It haggles.']}
+                    loop
+                    cursor
+                    duration={80}
+                    holdDelay={2000}
+                  />
+                </span>
               </h1>
               <p className="mt-5 max-w-2xl text-lg text-neutral-600 animate-fade-up" style={{ animationDelay: '60ms' }}>
                 Set your constraints once. Your agent negotiates with up to 10 sellers in parallel,

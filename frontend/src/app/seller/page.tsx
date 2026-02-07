@@ -4,14 +4,26 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useConfig } from '@/store/configStore';
 import { AddSellerForm } from '@/features/episode-config/components/AddSellerForm';
+import { ProductCatalogGrid } from '@/components/ProductCatalogGrid';
 import { Button } from '@/components/Button';
 import { ROUTES } from '@/lib/router';
+import type { Product } from '@/lib/types';
 
 export default function SellerPage() {
   const { sellers, addSeller, updateSeller, removeSeller } = useConfig();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [showCatalog, setShowCatalog] = useState(false);
 
   const initialSeller = editingIndex !== null ? sellers[editingIndex] ?? null : null;
+
+  const handleDeleteProduct = (productId: string) => {
+    // Product catalog management - could wire to API
+    console.log('Delete product:', productId);
+  };
+
+  const handleEditProduct = (product: Product) => {
+    console.log('Edit product:', product);
+  };
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -33,6 +45,27 @@ export default function SellerPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Product Catalog Section */}
+          <section className="bg-white rounded-lg p-6 shadow-sm border border-neutral-200">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-900">Product Catalog</h2>
+                <p className="text-sm text-neutral-600">Browse and manage the shared product catalog</p>
+              </div>
+              <Button variant="secondary" size="sm" onClick={() => setShowCatalog(!showCatalog)}>
+                {showCatalog ? 'Hide Catalog' : 'Show Catalog'}
+              </Button>
+            </div>
+            {showCatalog && (
+              <ProductCatalogGrid
+                selectable={false}
+                showActions={true}
+                onEditProduct={handleEditProduct}
+                onDeleteProduct={handleDeleteProduct}
+              />
+            )}
+          </section>
+
           <AddSellerForm
             initialSeller={initialSeller ?? undefined}
             onAdd={addSeller}

@@ -4,6 +4,7 @@ import type {
   InitializeSessionResponse,
   SessionDetails,
   SessionSummary,
+  SessionListResponse,
   CreditCardConfig,
 } from '../types';
 
@@ -41,5 +42,9 @@ export async function patchSessionCreditCards(
   creditCards: CreditCardConfig[]
 ): Promise<{ ok: boolean; session_id: string; credit_cards_count: number }> {
   return api.patch(`${BASE_PATH}/${sessionId}/credit-cards`, { credit_cards: creditCards });
+}
+
+export async function listSessions(): Promise<SessionListResponse> {
+  return api.get<SessionListResponse>(`${BASE_PATH}/sessions`);
 }
 

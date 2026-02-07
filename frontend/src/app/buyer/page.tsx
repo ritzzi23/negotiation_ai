@@ -7,6 +7,7 @@ import { useConfig } from '@/store/configStore';
 import { useSession } from '@/store/sessionStore';
 import { AddBuyerForm } from '@/features/episode-config/components/AddBuyerForm';
 import { CreditCardForm } from '@/features/episode-config/components/CreditCardForm';
+import { ProductCatalogGrid } from '@/components/ProductCatalogGrid';
 import { Button } from '@/components/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -15,7 +16,7 @@ import { initializeSession } from '@/lib/api/simulation';
 import { startNegotiation } from '@/lib/api/negotiation';
 import { validateEpisodeConfig } from '@/utils/validators';
 import { ROUTES } from '@/lib/router';
-import type { CreditCardConfig } from '@/lib/types';
+import type { CreditCardConfig, Product, ShoppingItem } from '@/lib/types';
 import { APIError } from '@/lib/api/client';
 
 export default function BuyerPage() {
@@ -32,6 +33,11 @@ export default function BuyerPage() {
   const [loadingStartAll, setLoadingStartAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [showCatalog, setShowCatalog] = useState(true);
+  const [catalogProduct, setCatalogProduct] = useState<Product | null>(null);
+  const [catalogQty, setCatalogQty] = useState(1);
+  const [catalogMinPrice, setCatalogMinPrice] = useState(0);
+  const [catalogMaxPrice, setCatalogMaxPrice] = useState(0);
 
   useEffect(() => setMounted(true), []);
 
@@ -133,6 +139,44 @@ export default function BuyerPage() {
     });
   };
 
+  const handleSelectAllSellers = () => {
+    if (selectedSellerIndices.size === sellers.length) {
+      setSelectedSellerIndices(new Set());
+    } else {
+      setSelectedSellerIndices(new Set(sellers.map((_, i) => i)));
+    }
+  };
+
+  const handleCatalogProductSelect = (product: Product) => {
+    setCatalogProduct(product);
+    setCatalogQty(1);
+    setCatalogMinPrice(0);
+    setCatalogMaxPrice(0);
+  };
+
+  const handleAddFromCatalog = () => {
+    if (!catalogProduct || catalogMaxPrice <= catalogMinPrice || catalogQty < 1) return;
+    const item: ShoppingItem = {
+      item_id: catalogProduct.id,
+      item_name: catalogProduct.name,
+      variant: catalogProduct.variant || undefined,
+      size_value: catalogProduct.size_value || undefined,
+      size_unit: catalogProduct.size_unit || undefined,
+      quantity_needed: catalogQty,
+      min_price_per_unit: catalogMinPrice,
+      max_price_per_unit: catalogMaxPrice,
+    };
+    // If a buyer exists, add item to their shopping list
+    if (selectedBuyer) {
+      const updated = { ...selectedBuyer, shopping_list: [...selectedBuyer.shopping_list, item] };
+      updateBuyer(selectedBuyerIndex, updated);
+    }
+    setCatalogProduct(null);
+  };
+
+  // Agent readiness indicator
+  const isAgentReady = selectedBuyer && selectedBuyer.shopping_list.length > 0 && llmConfig.model;
+
   if (!mounted) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
@@ -161,9 +205,75 @@ export default function BuyerPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Agent Readiness Indicator */}
+          <div className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm ${
+            isAgentReady
+              ? 'bg-green-50 border border-green-200 text-green-700'
+              : 'bg-amber-50 border border-amber-200 text-amber-700'
+          }`}>
+            <span className={`h-2.5 w-2.5 rounded-full ${isAgentReady ? 'bg-green-500' : 'bg-amber-500'}`} />
+            {isAgentReady ? 'Agent Ready' : 'Setup Required'}
+            {!selectedBuyer && <span className="ml-2 text-xs">— Add a buyer agent below</span>}
+            {selectedBuyer && selectedBuyer.shopping_list.length === 0 && <span className="ml-2 text-xs">— Add items to shopping list</span>}
+          </div>
+
           {error && (
             <ErrorMessage message={error} onDismiss={() => setError(null)} />
           )}
+
+          {/* Product Catalog Quick-Add */}
+          <section className="bg-white rounded-lg p-6 shadow-sm border border-neutral-200">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-900">Product Catalog</h2>
+                <p className="text-sm text-neutral-600">Browse and add products to your shopping list</p>
+              </div>
+              <Button size="sm" variant="secondary" onClick={() => setShowCatalog(!showCatalog)}>
+                {showCatalog ? 'Hide Catalog' : 'Browse Catalog'}
+              </Button>
+            </div>
+
+            {showCatalog && (
+              <div className="mt-4">
+                <ProductCatalogGrid onSelectProduct={handleCatalogProductSelect} selectable={!!selectedBuyer} />
+              </div>
+            )}
+
+            {catalogProduct && (
+              <div className="mt-4 rounded-xl border border-primary-200 bg-primary-50 p-4">
+                <h3 className="text-sm font-semibold text-neutral-900 mb-3">
+                  Add &quot;{catalogProduct.name}&quot; to shopping list
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-600 mb-1">Quantity</label>
+                    <input type="number" min={1} value={catalogQty} onChange={(e) => setCatalogQty(Number(e.target.value))}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-600 mb-1">Min Price ($)</label>
+                    <input type="number" min={0} step={0.01} value={catalogMinPrice} onChange={(e) => setCatalogMinPrice(Number(e.target.value))}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-600 mb-1">Max Price ($)</label>
+                    <input type="number" min={0} step={0.01} value={catalogMaxPrice} onChange={(e) => setCatalogMaxPrice(Number(e.target.value))}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-sm" />
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <Button size="sm" onClick={handleAddFromCatalog}
+                    disabled={catalogMaxPrice <= catalogMinPrice || catalogQty < 1 || !selectedBuyer}>
+                    Add to Shopping List
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => setCatalogProduct(null)}>
+                    Cancel
+                  </Button>
+                  {!selectedBuyer && <span className="text-xs text-amber-600">Create a buyer first</span>}
+                </div>
+              </div>
+            )}
+          </section>
 
           <section className="bg-white rounded-lg p-6 shadow-sm border border-neutral-200">
             <h2 className="text-lg font-semibold text-neutral-900 mb-2">Start negotiation</h2>
@@ -236,7 +346,17 @@ export default function BuyerPage() {
             </div>
 
             {sellerMode === 'custom' && sellers.length > 0 && (
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+              <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+                <div className="mb-2">
+                  <button
+                    type="button"
+                    onClick={handleSelectAllSellers}
+                    className="text-xs font-medium text-primary-600 hover:text-primary-800 transition-colors"
+                  >
+                    {selectedSellerIndices.size === sellers.length ? 'Deselect All' : 'Select All'}
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {sellers.map((seller, index) => (
                   <label key={seller.name + index} className="flex items-center gap-2 text-sm text-neutral-700">
                     <input
@@ -248,6 +368,7 @@ export default function BuyerPage() {
                     <span>{seller.name}</span>
                   </label>
                 ))}
+                </div>
               </div>
             )}
           </section>

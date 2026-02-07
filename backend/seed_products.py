@@ -16,16 +16,16 @@ from app.core.models import Product
 
 
 DEFAULT_PRODUCTS: List[Dict[str, object]] = [
-    {"id": "item_laptop", "name": "Laptop", "category": "Electronics", "description": "Portable computer"},
-    {"id": "item_smartphone", "name": "Smartphone", "category": "Electronics", "description": "Mobile phone"},
-    {"id": "item_headphones", "name": "Headphones", "category": "Electronics", "description": "Over-ear or in-ear"},
-    {"id": "item_monitor", "name": "Monitor", "category": "Electronics", "description": "External display"},
-    {"id": "item_keyboard", "name": "Keyboard", "category": "Electronics", "description": "Mechanical or membrane"},
-    {"id": "item_mouse", "name": "Mouse", "category": "Electronics", "description": "Wireless or wired"},
-    {"id": "item_office_chair", "name": "Office Chair", "category": "Furniture", "description": "Ergonomic seating"},
-    {"id": "item_desk", "name": "Desk", "category": "Furniture", "description": "Work surface"},
-    {"id": "item_coffee_machine", "name": "Coffee Machine", "category": "Appliances", "description": "Brew coffee"},
-    {"id": "item_printer", "name": "Printer", "category": "Office", "description": "Print documents"},
+    {"id": "item_laptop", "name": "Laptop", "category": "Electronics", "description": "Portable computer", "image_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=200&fit=crop"},
+    {"id": "item_smartphone", "name": "Smartphone", "category": "Electronics", "description": "Mobile phone", "image_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=200&fit=crop"},
+    {"id": "item_headphones", "name": "Headphones", "category": "Electronics", "description": "Over-ear or in-ear", "image_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=200&fit=crop"},
+    {"id": "item_monitor", "name": "Monitor", "category": "Electronics", "description": "External display", "image_url": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=300&h=200&fit=crop"},
+    {"id": "item_keyboard", "name": "Keyboard", "category": "Electronics", "description": "Mechanical or membrane", "image_url": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=300&h=200&fit=crop"},
+    {"id": "item_mouse", "name": "Mouse", "category": "Electronics", "description": "Wireless or wired", "image_url": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300&h=200&fit=crop"},
+    {"id": "item_office_chair", "name": "Office Chair", "category": "Furniture", "description": "Ergonomic seating", "image_url": "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=300&h=200&fit=crop"},
+    {"id": "item_desk", "name": "Desk", "category": "Furniture", "description": "Work surface", "image_url": "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=300&h=200&fit=crop"},
+    {"id": "item_coffee_machine", "name": "Coffee Machine", "category": "Appliances", "description": "Brew coffee", "image_url": "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=300&h=200&fit=crop"},
+    {"id": "item_printer", "name": "Printer", "category": "Office", "description": "Print documents", "image_url": "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=300&h=200&fit=crop"},
     {
         "id": "item_coke_can",
         "name": "Coke",
@@ -34,6 +34,7 @@ DEFAULT_PRODUCTS: List[Dict[str, object]] = [
         "size_unit": "ml",
         "category": "Beverages",
         "description": "Coca-Cola 330ml can",
+        "image_url": "https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=300&h=200&fit=crop",
     },
     {
         "id": "item_coke_bottle",
@@ -43,6 +44,7 @@ DEFAULT_PRODUCTS: List[Dict[str, object]] = [
         "size_unit": "ml",
         "category": "Beverages",
         "description": "Coca-Cola 500ml bottle",
+        "image_url": "https://images.unsplash.com/photo-1624552184280-9e9631bbeee9?w=300&h=200&fit=crop",
     },
 ]
 
@@ -72,6 +74,7 @@ def upsert_products(products: List[Dict[str, str]]) -> None:
                 existing.size_unit = item.get("size_unit")
                 existing.category = item.get("category")
                 existing.description = item.get("description")
+                existing.image_url = item.get("image_url")
             else:
                 db.add(
                     Product(
@@ -83,6 +86,7 @@ def upsert_products(products: List[Dict[str, str]]) -> None:
                         size_unit=item.get("size_unit"),
                         category=item.get("category"),
                         description=item.get("description"),
+                        image_url=item.get("image_url"),
                     )
                 )
 

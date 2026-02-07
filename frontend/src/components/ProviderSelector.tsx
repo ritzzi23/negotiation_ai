@@ -41,7 +41,7 @@ export function ProviderSelector({ selectedProvider, onProviderChange }: Provide
   };
 
   const isAvailable = status?.llm?.available ?? false;
-  const providerName = status?.llm?.provider ?? 'unknown';
+  const providerName = selectedProvider === 'lm_studio' ? 'LM Studio' : 'OpenRouter';
 
   return (
     <div className="flex w-full flex-wrap items-center gap-2 rounded-2xl border border-neutral-200 bg-white px-3 py-2 text-[11px] sm:text-xs md:w-auto md:flex-nowrap">

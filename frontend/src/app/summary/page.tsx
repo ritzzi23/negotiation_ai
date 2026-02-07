@@ -12,6 +12,7 @@ import { getSessionSummary } from '@/lib/api/simulation';
 import type { SessionSummary, PurchaseSummary } from '@/lib/types';
 import { formatCurrency, formatDateTime, formatDuration } from '@/utils/formatters';
 import { calculatePercentage } from '@/utils/helpers';
+import { generateEpisodeInvoice } from '@/utils/generateEpisodeInvoice';
 import { ROUTES } from '@/lib/router';
 
 export default function SummaryPage() {
@@ -142,11 +143,21 @@ export default function SummaryPage() {
               </div>
             </div>
             {summary.total_cost_summary.total_spent > 0 && (
-              <div className="mt-6 pt-6 border-t border-neutral-200">
-                <p className="text-sm text-neutral-600 mb-1">Total Spent</p>
-                <p className="text-3xl font-bold text-primary-600">
-                  {formatCurrency(summary.total_cost_summary.total_spent)}
-                </p>
+              <div className="mt-6 pt-6 border-t border-neutral-200 flex items-end justify-between">
+                <div>
+                  <p className="text-sm text-neutral-600 mb-1">Total Spent</p>
+                  <p className="text-3xl font-bold text-primary-600">
+                    {formatCurrency(summary.total_cost_summary.total_spent)}
+                  </p>
+                </div>
+                {summary.purchases.length > 0 && (
+                  <Button variant="secondary" onClick={() => generateEpisodeInvoice(summary)}>
+                    <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download Full Invoice
+                  </Button>
+                )}
               </div>
             )}
           </div>

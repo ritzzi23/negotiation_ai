@@ -30,6 +30,7 @@ class Product(Base):
     size_unit = Column(String(20), nullable=True)
     category = Column(String(50), nullable=True)
     description = Column(Text, nullable=True)
+    image_url = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=func.now(), nullable=False)
 
     # Relationships
@@ -77,8 +78,9 @@ class Buyer(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     session_id = Column(String(36), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(100), nullable=False)
+    custom_prompt = Column(Text, nullable=True)
     created_at = Column(DateTime, default=func.now(), nullable=False)
-    
+
     # Relationships
     session = relationship("Session", back_populates="buyers")
     buyer_items = relationship("BuyerItem", back_populates="buyer", cascade="all, delete-orphan")
@@ -141,8 +143,9 @@ class Seller(Base):
         nullable=False,
         default='firm_pricing'
     )
+    custom_prompt = Column(Text, nullable=True)
     created_at = Column(DateTime, default=func.now(), nullable=False)
-    
+
     # Relationships
     session = relationship("Session", back_populates="sellers")
     inventory = relationship("SellerInventory", back_populates="seller", cascade="all, delete-orphan")

@@ -15,6 +15,7 @@ export interface ShoppingItem {
 export interface BuyerConfig {
   name: string;
   shopping_list: ShoppingItem[];
+  custom_prompt?: string;
 }
 
 // Seller Configuration
@@ -40,6 +41,7 @@ export interface Product {
   size_unit?: string | null;
   category?: string | null;
   description?: string | null;
+  image_url?: string | null;
   created_at: string;
 }
 
@@ -112,6 +114,7 @@ export interface SellerConfig {
   name: string;
   inventory: InventoryItem[];
   profile: SellerProfile;
+  custom_prompt?: string;
 }
 
 // LLM Configuration
@@ -122,12 +125,33 @@ export interface LLMConfig {
   provider?: 'lm_studio' | 'openrouter'; // Optional provider selection
 }
 
+// Negotiation Mode
+export type NegotiationMode = 'auto' | 'approval' | 'manual';
+
 // Session
 export interface InitializeSessionRequest {
   buyer: BuyerConfig;
   sellers: SellerConfig[];
   llm_config: LLMConfig;
   credit_cards?: CreditCardConfig[];
+  mode?: NegotiationMode;
+}
+
+// Session History
+export interface SessionListItem {
+  session_id: string;
+  status: string;
+  created_at: string;
+  buyer_name: string;
+  total_runs: number;
+  completed_runs: number;
+  total_savings: number;
+  llm_model: string;
+}
+
+export interface SessionListResponse {
+  sessions: SessionListItem[];
+  total: number;
 }
 
 export interface SellerParticipant {
@@ -271,6 +295,7 @@ export interface PurchaseSummary {
   total_cost: number;
   negotiation_rounds: number;
   duration_seconds: number;
+  card_savings?: number;
   ai_summary?: ItemNegotiationSummary;
 }
 

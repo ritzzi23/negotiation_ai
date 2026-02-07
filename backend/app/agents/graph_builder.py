@@ -313,19 +313,87 @@ class NegotiationGraph:
                     "timestamp": datetime.now()
                 }
             
-            # Max rounds reached
+            # Max rounds reached — auto-select best valid offer if available
             if room_state.current_round >= self.max_rounds and room_state.status != "completed":
-                room_state.status = "aborted"
-                yield {
-                    "type": "negotiation_complete",
-                    "data": {
-                        "selected_seller_id": None,
-                        "final_offer": None,
-                        "reason": "Max rounds reached",
-                        "rounds": room_state.current_round
-                    },
-                    "timestamp": datetime.now()
-                }
+                all_offers = _get_latest_offers_per_seller(room_state)
+                valid_offers = sorted(
+                    [
+                        o for o in all_offers
+                        if o["price"] <= room_state.buyer_constraints.max_price_per_unit
+                        and o["price"] >= room_state.buyer_constraints.min_price_per_unit
+                    ],
+                    key=lambda o: o["price"],
+                )
+
+                if valid_offers:
+                    best = valid_offers[0]
+                    room_state.status = "completed"
+                    room_state.selected_seller_id = best["seller_id"]
+                    best_offer = {"price": best["price"], "quantity": best["quantity"]}
+                    room_state.final_offer = best_offer
+                    room_state.decision_reason = (
+                        f"Auto-selected best offer from {best['seller_name']}: "
+                        f"${best['price']:.2f}/unit after {room_state.current_round} rounds"
+                    )
+
+                    # Compute card savings (same as normal accept path)
+                    total_cost = best["price"] * best["quantity"]
+                    effective_total = total_cost
+                    recommended_card = None
+                    card_savings = 0.0
+                    if getattr(room_state, "session_id", None):
+                        wallet = get_wallet_for_session(room_state.session_id)
+                        ctx = compute_deal_context(
+                            price_per_unit=best["price"],
+                            quantity=best["quantity"],
+                            item_name=room_state.buyer_constraints.item_name,
+                            seller_name=best["seller_name"],
+                            seller_cost_per_unit=best["seller_cost_per_unit"],
+                            wallet=wallet,
+                        )
+                        effective_total = ctx.buyer_effective_total
+                        recommended_card = ctx.recommended_card_name
+                        card_savings = ctx.buyer_savings
+
+                    yield {
+                        "type": "decision",
+                        "data": {
+                            "decision": "accept",
+                            "chosen_seller_id": best["seller_id"],
+                            "chosen_seller_name": best["seller_name"],
+                            "final_price": best["price"],
+                            "final_quantity": best["quantity"],
+                            "total_cost": total_cost,
+                            "effective_total": effective_total,
+                            "recommended_card": recommended_card,
+                            "card_savings": card_savings,
+                            "reason": room_state.decision_reason,
+                        },
+                        "timestamp": datetime.now(),
+                    }
+                    yield {
+                        "type": "negotiation_complete",
+                        "data": {
+                            "selected_seller_id": best["seller_id"],
+                            "selected_seller_name": best["seller_name"],
+                            "final_offer": best_offer,
+                            "reason": room_state.decision_reason,
+                            "rounds": room_state.current_round,
+                        },
+                        "timestamp": datetime.now(),
+                    }
+                else:
+                    room_state.status = "aborted"
+                    yield {
+                        "type": "negotiation_complete",
+                        "data": {
+                            "selected_seller_id": None,
+                            "final_offer": None,
+                            "reason": "Max rounds reached",
+                            "rounds": room_state.current_round,
+                        },
+                        "timestamp": datetime.now(),
+                    }
         
         except Exception as e:
             logger.error(f"Negotiation graph error: {e}")

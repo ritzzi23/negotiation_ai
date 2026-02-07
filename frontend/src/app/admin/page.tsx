@@ -34,7 +34,7 @@ export default function AdminPage() {
     importFromJson,
     loadSampleData,
   } = useConfig();
-  const { session, initializeSession: setSession } = useSession();
+  const { sessionId, initializeSession: setSession } = useSession();
 
   const [selectedBuyerIndex, setSelectedBuyerIndex] = useState<number>(0);
   const [selectedSellerIndices, setSelectedSellerIndices] = useState<Set<number>>(new Set());
@@ -348,7 +348,7 @@ export default function AdminPage() {
                 ? 'No credit cards in config. They are sent when you initialize the episode.'
                 : `${creditCards.length} card(s): ${creditCards.map((c) => c.card_name).join(', ')}.`}
             </p>
-            {session?.session_id && creditCards.length > 0 && (
+            {sessionId && creditCards.length > 0 && (
               <Button
                 variant="secondary"
                 size="sm"
@@ -356,7 +356,7 @@ export default function AdminPage() {
                   setPatchingCards(true);
                   setError(null);
                   try {
-                    await patchSessionCreditCards(session.session_id, creditCards);
+                    await patchSessionCreditCards(sessionId, creditCards);
                   } catch (e: unknown) {
                     setError(e instanceof Error ? e.message : 'Failed to update session cards');
                   } finally {

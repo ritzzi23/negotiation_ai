@@ -11,9 +11,12 @@ import { DEFAULT_TEMPERATURE, DEFAULT_MAX_TOKENS } from '@/lib/constants';
 // LM Studio models (local)
 const LM_STUDIO_MODELS = [
   { value: 'qwen/qwen3-1.7b', label: 'Qwen 3 1.7B (Fast, Lightweight)' },
-  { value: 'llama-3-8b-instruct', label: 'Llama 3 8B Instruct' },
-  { value: 'mistral-7b-instruct', label: 'Mistral 7B Instruct' },
-  { value: 'codellama-7b-instruct', label: 'CodeLlama 7B Instruct' },
+  { value: 'llama-3.2-3b-instruct', label: 'Llama 3 8B Instruct' },
+  { value: 'mistralai/mistral-7b-instruct-v0.3', label: 'Mistral 7B Instruct' },
+  { value: 'ibm/granite-4-h-tiny', label: 'IBM tiny'},
+  { value: 'mistralai/ministral-3-3b', label: 'Mistral 3 3B' },
+  { value: 'qwen/qwen3-4b-thinking-2507', label: 'Qwen 3 4B' },
+  { value: 'openai/gpt-oss-20b', label: 'OpenAI GPT OSS-20B' },
 ];
 
 // OpenRouter models (cloud)

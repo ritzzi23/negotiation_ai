@@ -57,3 +57,15 @@ export async function forceDecision(
   return api.post<DecisionResponse>(`${BASE_PATH}/${roomId}/decide?${queryParams.toString()}`);
 }
 
+export async function approveMessage(roomId: string): Promise<{ status: string; room_id: string }> {
+  return api.post(`${BASE_PATH}/${roomId}/approve`);
+}
+
+export async function pauseNegotiation(roomId: string): Promise<{ status: string; room_id: string }> {
+  return api.post(`${BASE_PATH}/${roomId}/pause`);
+}
+
+export async function resumeNegotiation(roomId: string): Promise<{ status: string; room_id: string }> {
+  return api.post(`${BASE_PATH}/${roomId}/resume`);
+}
+

@@ -2,12 +2,44 @@
 
 import { useMemo } from 'react';
 import { useNegotiation } from '@/store/negotiationStore';
+import { useConfig } from '@/store/configStore';
 import { Card } from '@/components/Card';
 import { Badge } from '@/components/Badge';
-import type { BuyerConstraints, SellerParticipant } from '@/lib/types';
+import type { BuyerConstraints, SellerParticipant, CreditCardConfig } from '@/lib/types';
 import { formatCurrency, formatRelativeTime } from '@/utils/formatters';
 import { sortOffersByPrice, isOfferWithinBudget, findBestOffer } from '@/utils/helpers';
 import { getSellerColor } from '@/lib/constants';
+
+function computeBestCardSavings(
+  price: number,
+  quantity: number,
+  sellerName: string,
+  cards: CreditCardConfig[]
+): { savings: number; cardName: string; effectivePrice: number } | null {
+  let best: { savings: number; cardName: string; effectivePrice: number } | null = null;
+  for (const card of cards) {
+    let savingsRate = 0;
+    // Check vendor offers first
+    const vendorOffer = card.vendor_offers?.find(
+      (v) => sellerName.toLowerCase().includes(v.vendor_keyword.toLowerCase())
+    );
+    if (vendorOffer) {
+      savingsRate = vendorOffer.discount_pct / 100;
+    }
+    // Check category rewards (use electronics as default for negotiation items)
+    const electronicsReward = card.rewards?.find((r) => r.category === 'electronics');
+    const generalReward = card.rewards?.find((r) => r.category === 'general');
+    const rewardRate = (electronicsReward?.cashback_pct || generalReward?.cashback_pct || 0) / 100;
+    savingsRate = Math.max(savingsRate, rewardRate);
+
+    const totalCost = price * quantity;
+    const savings = totalCost * savingsRate;
+    if (savings > 0 && (!best || savings > best.savings)) {
+      best = { savings, cardName: card.card_name, effectivePrice: price * (1 - savingsRate) };
+    }
+  }
+  return best;
+}
 
 interface OffersPanelProps {
   roomId: string;
@@ -18,6 +50,7 @@ interface OffersPanelProps {
 
 export function OffersPanel({ roomId, itemName, constraints, sellers }: OffersPanelProps) {
   const { rooms } = useNegotiation();
+  const { creditCards } = useConfig();
   const negotiationState = rooms[roomId];
 
   const offers = useMemo(() => {
@@ -121,6 +154,22 @@ export function OffersPanel({ roomId, itemName, constraints, sellers }: OffersPa
                         {formatCurrency(offer.price)}
                         <span className="text-sm font-normal text-neutral-600">/unit</span>
                       </p>
+                      {(() => {
+                        const cardInfo = computeBestCardSavings(offer.price, offer.quantity, offer.seller_name, creditCards);
+                        if (cardInfo) {
+                          return (
+                            <div className="bg-secondary-50 rounded px-2 py-1 mt-1">
+                              <p className="text-xs text-secondary-700">
+                                With {cardInfo.cardName}: <span className="font-semibold">{formatCurrency(cardInfo.effectivePrice)}/unit</span>
+                              </p>
+                              <p className="text-xs text-secondary-600">
+                                Save {formatCurrency(cardInfo.savings)} total
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                       <p className="text-sm text-neutral-600">
                         Quantity: {offer.quantity} units
                       </p>

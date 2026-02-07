@@ -19,6 +19,7 @@ def render_buyer_prompt(
     conversation_history: List[Message],
     available_sellers: List[Seller],
     deal_context_text: Optional[str] = None,
+    custom_prompt: Optional[str] = None,
 ) -> List[ChatMessage]:
     """
     Render buyer system prompt with constraints and context.
@@ -68,6 +69,8 @@ CRITICAL RULES:
 - Do NOT reveal your reasoning or thought process
 - NEVER output <think>...</think> tags
 - Respond ONLY with your negotiation message to the sellers"""
+    if custom_prompt:
+        system_prompt += f"\n\nADDITIONAL INSTRUCTIONS FROM USER:\n{custom_prompt}"
     if deal_context_text:
         system_prompt += f"\n\nDEAL CONTEXT (effective cost with your cards):\n{deal_context_text}"
     
@@ -131,6 +134,7 @@ def render_seller_prompt(
     conversation_history: List[Message],
     buyer_name: str,
     deal_context_text: Optional[str] = None,
+    custom_prompt: Optional[str] = None,
 ) -> List[ChatMessage]:
     """
     Render seller system prompt with inventory and behavioral profile.
@@ -197,6 +201,8 @@ If you want to make a specific offer, include a JSON block at the end:
 {{"offer": {{"price": <price_per_unit>, "quantity": <quantity>}}}}
 ```
 The offer will be automatically parsed. Price must be between ${inventory_item.least_price:.2f} and ${inventory_item.selling_price:.2f}."""
+    if custom_prompt:
+        system_prompt += f"\n\nADDITIONAL INSTRUCTIONS FROM USER:\n{custom_prompt}"
     if deal_context_text:
         system_prompt += f"\n\nDEAL CONTEXT (use this to pitch card benefits to the buyer):\n{deal_context_text}"
     

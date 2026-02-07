@@ -23,6 +23,7 @@ class ProductBase(BaseModel):
     size_unit: Optional[str] = Field(None, max_length=20)
     category: Optional[str] = Field(None, max_length=50)
     description: Optional[str] = Field(None, max_length=500)
+    image_url: Optional[str] = Field(None, max_length=500)
 
     @field_validator("size_unit")
     @classmethod
@@ -53,6 +54,7 @@ class ProductUpdate(BaseModel):
     size_unit: Optional[str] = Field(None, max_length=20)
     category: Optional[str] = Field(None, max_length=50)
     description: Optional[str] = Field(None, max_length=500)
+    image_url: Optional[str] = Field(None, max_length=500)
 
     @field_validator("size_unit")
     @classmethod
@@ -117,6 +119,7 @@ class BuyerConfig(BaseModel):
     """Buyer configuration."""
     name: str = Field(..., min_length=1, max_length=50)
     shopping_list: List[ShoppingItem] = Field(..., min_length=1)
+    custom_prompt: Optional[str] = Field(None, max_length=500, description="Custom instructions appended to agent prompt")
 
 
 class InventoryItem(BaseModel):
@@ -201,6 +204,7 @@ class SellerConfig(BaseModel):
     name: str = Field(..., min_length=1, max_length=50)
     inventory: List[InventoryItem] = Field(..., min_length=1)
     profile: SellerProfile
+    custom_prompt: Optional[str] = Field(None, max_length=500, description="Custom instructions appended to agent prompt")
 
 
 class LLMConfig(BaseModel):
@@ -217,6 +221,7 @@ class InitializeSessionRequest(BaseModel):
     sellers: List[SellerConfig] = Field(..., min_length=1, max_length=10)
     llm_config: LLMConfig
     credit_cards: List[CreditCardConfig] = Field(default_factory=list, description="User's credit cards for reward optimization")
+    mode: Optional[str] = Field("auto", description="Negotiation mode: auto, approval, or manual")
 
 
 # Response Models
@@ -422,4 +427,22 @@ class SessionSummaryResponse(BaseModel):
     negotiation_metrics: NegotiationMetrics
     overall_analysis: Optional[OverallAnalysis] = None
     deal_explanation: Optional[DealExplanationResponse] = None
+
+
+class SessionListItem(BaseModel):
+    """Session list item for history."""
+    session_id: str
+    status: str
+    created_at: datetime
+    buyer_name: str
+    total_runs: int
+    completed_runs: int
+    total_savings: float
+    llm_model: str
+
+
+class SessionListResponse(BaseModel):
+    """Session list response."""
+    sessions: List[SessionListItem]
+    total: int
 

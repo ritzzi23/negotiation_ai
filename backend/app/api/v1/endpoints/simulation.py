@@ -37,6 +37,13 @@ logger = get_logger(__name__)
 router = APIRouter()
 
 
+@router.get("/simulation/sessions")
+async def list_sessions() -> Dict:
+    """List all sessions with summary info."""
+    sessions = session_manager.list_sessions()
+    return {"sessions": sessions, "total": len(sessions)}
+
+
 @router.post("/simulation/initialize", response_model=InitializeSessionResponse, status_code=status.HTTP_200_OK)
 async def initialize_session(request: InitializeSessionRequest):
     """

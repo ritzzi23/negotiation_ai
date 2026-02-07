@@ -77,34 +77,37 @@ export function DecisionModal({
     doc.text(itemName, margin + 16, y + 74);
     doc.text(`${quantity} units`, margin + contentWidth / 2, y + 74);
 
+    const rightCol = pageWidth - margin - 16;
+
     y += 124;
     doc.roundedRect(margin, y, contentWidth, 160, 10, 10);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.text('DESCRIPTION', margin + 16, y + 24);
-    doc.text('UNIT PRICE', margin + 240, y + 24);
-    doc.text('QTY', margin + 360, y + 24);
-    doc.text('TOTAL', margin + 420, y + 24);
+    doc.text('UNIT PRICE', margin + 280, y + 24, { align: 'right' });
+    doc.text('QTY', margin + 360, y + 24, { align: 'right' });
+    doc.text('TOTAL', rightCol, y + 24, { align: 'right' });
     doc.setDrawColor(226, 232, 240);
     doc.line(margin + 16, y + 32, margin + contentWidth - 16, y + 32);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
-    doc.text(itemName, margin + 16, y + 56);
-    doc.text(pricePerUnit, margin + 240, y + 56);
-    doc.text(String(quantity), margin + 360, y + 56);
-    doc.text(total, margin + 420, y + 56);
+    const itemLines = doc.splitTextToSize(itemName, 240);
+    doc.text(itemLines[0], margin + 16, y + 56);
+    doc.text(pricePerUnit, margin + 280, y + 56, { align: 'right' });
+    doc.text(String(quantity), margin + 360, y + 56, { align: 'right' });
+    doc.text(total, rightCol, y + 56, { align: 'right' });
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.text('Agreed Total', margin + 16, y + 104);
     doc.setFont('helvetica', 'normal');
-    doc.text(total, margin + 420, y + 104);
+    doc.text(total, rightCol, y + 104, { align: 'right' });
 
     if (effectiveTotal) {
       doc.setFont('helvetica', 'bold');
       doc.text('Effective Total (after rewards)', margin + 16, y + 126);
       doc.setFont('helvetica', 'normal');
-      doc.text(effectiveTotal, margin + 420, y + 126);
+      doc.text(effectiveTotal, rightCol, y + 126, { align: 'right' });
     }
 
     doc.setFont('helvetica', 'bold');
@@ -256,9 +259,20 @@ export function DecisionModal({
         {/* Action Buttons */}
         <div className="flex flex-wrap justify-center gap-3">
           {decision.selected_seller_id && (
-            <Button variant="secondary" onClick={handleDownloadInvoice}>
-              Download Invoice Agreement
-            </Button>
+            <>
+              <Button variant="secondary" onClick={handleDownloadInvoice}>
+                Download Invoice
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  // Dispatch custom event to open PaymentDialog in parent
+                  window.dispatchEvent(new CustomEvent('dealforge:openPayment'));
+                }}
+              >
+                Pay Now
+              </Button>
+            </>
           )}
           <Button variant="ghost" onClick={handleNextItem} disabled={isNavigating}>
             Next Item

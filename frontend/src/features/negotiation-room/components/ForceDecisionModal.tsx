@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/Button';
 import { forceDecision } from '@/lib/api/negotiation';
-import type { SellerParticipant } from '@/lib/api/types';
-import type { Offer } from '@/store/negotiationStore';
+import type { SellerParticipant, Offer } from '@/lib/types';
 
 interface ForceDecisionModalProps {
   isOpen: boolean;

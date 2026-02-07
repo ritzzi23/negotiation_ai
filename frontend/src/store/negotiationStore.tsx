@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { Message, Offer, BuyerDecision } from '@/lib/types';
 
+type NegotiationMode = 'auto' | 'approval' | 'manual';
+
 interface NegotiationRoomState {
   messages: Message[];
   offers: Record<string, Offer & { seller_name: string }>;
@@ -12,6 +14,8 @@ interface NegotiationRoomState {
   isStreaming: boolean;
   stream: EventSource | null;
   roundTimeline: RoundTimelineEntry[];
+  mode: NegotiationMode;
+  isPaused: boolean;
 }
 
 interface RoundSellerResponse {
@@ -80,6 +84,8 @@ const initialRoomState: NegotiationRoomState = {
   isStreaming: false,
   stream: null,
   roundTimeline: [],
+  mode: 'auto',
+  isPaused: false,
 };
 
 const initialState: NegotiationState = {

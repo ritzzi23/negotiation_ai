@@ -60,7 +60,9 @@ export function useNegotiationStream({
   }, [onError, onComplete]);
 
   const handleEvent = useCallback(
-    (event: NegotiationEvent) => {
+    (rawEvent: NegotiationEvent) => {
+      // SSE events may carry extra fields beyond the strict type definitions
+      const event = rawEvent as any;
       switch (event.type) {
         case 'connected':
           console.log('SSE Connected:', event.room_id);
@@ -92,7 +94,7 @@ export function useNegotiationStream({
             message_id: `msg_${Date.now()}_${Math.random()}`,
             turn: event.turn_number || event.round,
             timestamp: event.timestamp,
-            sender_type: (event.sender_type as Message['sender_type']) || 'buyer',
+            sender_type: event.sender_type || 'buyer',
             sender_id: event.sender_id,
             sender_name: event.sender_name,
             message: displayMessage,
@@ -107,18 +109,18 @@ export function useNegotiationStream({
           const rawSellerMessage = event.content || event.message || '';
           // Strip thinking tokens from the seller message
           const displaySellerMessage = stripThinking(rawSellerMessage);
-          
+
           // Extract offer if present
           const sellerOfferData = event.offer ? {
             price: event.offer.price,
             quantity: event.offer.quantity,
             timestamp: event.timestamp,
           } : undefined;
-          
+
           // Fallback: if message is empty but offer exists, generate a display message
-          const finalSellerMessage = displaySellerMessage || 
+          const finalSellerMessage = displaySellerMessage ||
             (sellerOfferData ? `Offering $${sellerOfferData.price}/unit for ${sellerOfferData.quantity} units` : '');
-          
+
           const sellerMessage: Message = {
             message_id: `msg_${Date.now()}_${Math.random()}`,
             turn: event.turn_number || event.round,
@@ -131,7 +133,7 @@ export function useNegotiationStream({
             updated_offer: sellerOfferData,
           };
           addMessage(roomId, sellerMessage);
-          
+
           // Also update the offers panel
           if (sellerOfferData) {
             updateOffer(roomId, event.seller_id, event.sender_name, sellerOfferData);
@@ -143,7 +145,7 @@ export function useNegotiationStream({
             };
             const offerList = Object.entries(offersWithNew).map(([sellerId, offer]) => ({
               sellerId,
-              ...offer,
+              ...(offer as any),
             }));
             const bestOffer = findBestOffer(offerList);
             if (bestOffer && (!bestOfferRef.current || bestOfferRef.current.sellerId !== bestOffer.sellerId || bestOfferRef.current.price !== bestOffer.price)) {
@@ -206,7 +208,7 @@ export function useNegotiationStream({
             recommended_card: event.recommended_card,
             card_savings: event.card_savings,
           });
-          
+
           // Sync final deal to session store
           if (event.chosen_seller_name && event.final_price && event.final_quantity && event.total_cost) {
             updateNegotiationRoom(roomId, {
@@ -220,7 +222,7 @@ export function useNegotiationStream({
               },
             });
           }
-          
+
           // Add system message about the decision
           const decisionMessage: Message = {
             message_id: `msg_decision_${Date.now()}`,
@@ -273,10 +275,10 @@ export function useNegotiationStream({
               status: NegotiationStatus.COMPLETED,
               current_round: negotiationState.currentRound,
               final_deal: {
-                seller_name: negotiationState.decision.seller_name,
-                price: negotiationState.decision.final_price,
-                quantity: negotiationState.decision.quantity,
-                total_cost: negotiationState.decision.total_cost,
+                seller_name: negotiationState.decision.seller_name || '',
+                price: negotiationState.decision.final_price || 0,
+                quantity: negotiationState.decision.quantity || 0,
+                total_cost: negotiationState.decision.total_cost || 0,
               },
             });
           } else {

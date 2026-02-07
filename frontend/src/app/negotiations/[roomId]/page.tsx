@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useNegotiation } from '@/store/negotiationStore';
 import { useSession } from '@/store/sessionStore';
 import { Button } from '@/components/Button';
@@ -12,26 +12,43 @@ import { ChatPanel } from '@/features/negotiation-room/components/ChatPanel';
 import { NegotiationTimeline } from '@/features/negotiation-room/components/NegotiationTimeline';
 import { DecisionModal } from '@/features/negotiation-room/components/DecisionModal';
 import { ForceDecisionModal } from '@/features/negotiation-room/components/ForceDecisionModal';
+import { NegotiationModeSelector } from '@/features/negotiation-room/components/NegotiationModeSelector';
+import { InterventionPanel } from '@/features/negotiation-room/components/InterventionPanel';
+import { MessageInput } from '@/features/negotiation-room/components/MessageInput';
+import { PaymentDialog } from '@/features/negotiation-room/components/PaymentDialog';
 import { useNegotiationStream } from '@/features/negotiation-room/hooks/useNegotiationStream';
-import { startNegotiation, getNegotiationState } from '@/lib/api/negotiation';
+import { startNegotiation, getNegotiationState, sendBuyerMessage, pauseNegotiation, resumeNegotiation } from '@/lib/api/negotiation';
+import { useConfig } from '@/store/configStore';
 import { ROUTES } from '@/lib/router';
 import { MAX_NEGOTIATION_ROUNDS, NegotiationStatus } from '@/lib/constants';
+import type { NegotiationMode } from '@/features/negotiation-room/components/NegotiationModeSelector';
 
-export default function NegotiationRoomPage({ params }: { params: { roomId: string } }) {
+export default function NegotiationRoomPage() {
   const router = useRouter();
-  const { roomId } = params;
+  const { roomId } = useParams<{ roomId: string }>();
   const { negotiationRooms, updateNegotiationRoomStatus } = useSession();
   const { initializeRoom, rooms, setActiveRoom, addMessage, updateOffer, setDecision } = useNegotiation();
   
+  const { creditCards } = useConfig();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDecisionModal, setShowDecisionModal] = useState(false);
   const [showForceDecisionModal, setShowForceDecisionModal] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [negotiationStarted, setNegotiationStarted] = useState(false);
+  const [mode, setMode] = useState<NegotiationMode>('auto');
+  const [isPaused, setIsPaused] = useState(false);
   const initAttemptedRef = useRef(false);
 
   const room = negotiationRooms.find((r) => r.room_id === roomId);
   const negotiationState = rooms[roomId];
+
+  // Listen for payment dialog trigger from DecisionModal
+  useEffect(() => {
+    const handler = () => setShowPaymentDialog(true);
+    window.addEventListener('dealforge:openPayment', handler);
+    return () => window.removeEventListener('dealforge:openPayment', handler);
+  }, []);
 
   // Initialize room and start negotiation
   useEffect(() => {
@@ -165,6 +182,9 @@ export default function NegotiationRoomPage({ params }: { params: { roomId: stri
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
+            {room.status !== NegotiationStatus.COMPLETED && (
+              <NegotiationModeSelector mode={mode} onModeChange={setMode} disabled={isPaused} />
+            )}
             <div className="text-right">
               <p className="text-xs text-neutral-600">Round</p>
               <p className="text-lg font-bold text-primary-600">
@@ -179,6 +199,26 @@ export default function NegotiationRoomPage({ params }: { params: { roomId: stri
             )}
           </div>
         </div>
+
+        {/* Intervention Panel */}
+        {room.status !== NegotiationStatus.COMPLETED && (
+          <div className="mb-6">
+            <InterventionPanel
+              isActive={negotiationStarted}
+              isPaused={isPaused}
+              mode={mode}
+              onPause={async () => {
+                try { await pauseNegotiation(roomId); setIsPaused(true); } catch (e) { console.error(e); }
+              }}
+              onResume={async () => {
+                try { await resumeNegotiation(roomId); setIsPaused(false); } catch (e) { console.error(e); }
+              }}
+              onTakeOver={() => setMode('manual')}
+              onContinueWithAI={() => setMode('auto')}
+              onForceDecision={() => setShowForceDecisionModal(true)}
+            />
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -204,6 +244,18 @@ export default function NegotiationRoomPage({ params }: { params: { roomId: stri
           {/* Chat Panel (Right - 2/3) */}
           <div className="lg:col-span-2">
             <ChatPanel roomId={roomId} />
+            {room.status !== NegotiationStatus.COMPLETED && (mode === 'manual' || mode === 'approval') && (
+              <MessageInput
+                mode={mode === 'approval' ? 'approval' : 'manual'}
+                disabled={isPaused || !negotiationStarted}
+                onSend={async (msg) => {
+                  try { await sendBuyerMessage(roomId, msg); } catch (e) { console.error(e); }
+                }}
+                onApprove={async () => {
+                  try { await sendBuyerMessage(roomId, ''); } catch (e) { console.error(e); }
+                }}
+              />
+            )}
           </div>
         </div>
 
@@ -249,6 +301,22 @@ export default function NegotiationRoomPage({ params }: { params: { roomId: stri
           offers={negotiationState?.offers || {}}
           constraints={room.buyer_constraints}
           quantityNeeded={room.quantity_needed}
+        />
+      )}
+
+      {/* Payment Dialog */}
+      {showPaymentDialog && negotiationState?.decision && (
+        <PaymentDialog
+          isOpen={showPaymentDialog}
+          onClose={() => setShowPaymentDialog(false)}
+          onConfirm={(cardId) => {
+            console.log('Payment confirmed with card:', cardId);
+            setShowPaymentDialog(false);
+          }}
+          totalAmount={negotiationState.decision.total_cost || 0}
+          effectiveAmount={negotiationState.decision.effective_total ?? undefined}
+          creditCards={creditCards}
+          recommendedCardId={creditCards.find(c => c.card_name === negotiationState.decision?.recommended_card)?.card_id}
         />
       )}
     </div>

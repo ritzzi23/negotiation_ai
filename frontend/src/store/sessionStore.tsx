@@ -49,7 +49,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<SessionState>(initialState);
 
   const initializeSession = useCallback((response: InitializeSessionResponse) => {
-    setState({
+    setState((prev) => ({
+      ...prev,
       sessionId: response.session_id,
       status: SessionStatus.ACTIVE,
       buyer: null, // Will be populated from config
@@ -57,7 +58,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       negotiationRooms: response.negotiation_rooms,
       llmConfig: null,
       createdAt: response.created_at,
-    });
+    }));
   }, []);
 
   const updateSessionDetails = useCallback((details: SessionDetails) => {

@@ -156,6 +156,34 @@ async def send_message(room_id: str, request: SendMessageRequest) -> SendMessage
         )
 
 
+@router.post("/negotiation/{room_id}/approve")
+async def approve_message(room_id: str) -> Dict:
+    """Approve AI-generated message in per-message approval mode."""
+    if room_id not in active_rooms:
+        raise RoomNotFoundError(message=f"Room {room_id} not found or not active", code="ROOM_NOT_FOUND")
+    return {"status": "approved", "room_id": room_id}
+
+
+@router.post("/negotiation/{room_id}/pause")
+async def pause_negotiation(room_id: str) -> Dict:
+    """Pause an active negotiation."""
+    if room_id not in active_rooms:
+        raise RoomNotFoundError(message=f"Room {room_id} not found or not active", code="ROOM_NOT_FOUND")
+    room_state, created_at = active_rooms[room_id]
+    room_state.status = "paused"
+    return {"status": "paused", "room_id": room_id}
+
+
+@router.post("/negotiation/{room_id}/resume")
+async def resume_negotiation(room_id: str) -> Dict:
+    """Resume a paused negotiation."""
+    if room_id not in active_rooms:
+        raise RoomNotFoundError(message=f"Room {room_id} not found or not active", code="ROOM_NOT_FOUND")
+    room_state, created_at = active_rooms[room_id]
+    room_state.status = "active"
+    return {"status": "active", "room_id": room_id}
+
+
 @router.post("/negotiation/{room_id}/decide")
 async def force_decision(
     room_id: str,

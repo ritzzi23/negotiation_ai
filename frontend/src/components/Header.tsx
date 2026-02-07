@@ -8,9 +8,9 @@ import { ProviderSelector } from './ProviderSelector';
 import { ROUTES } from '@/lib/router';
 
 export function Header() {
-  const { session, llmProvider, setLLMProvider } = useSession();
+  const { sessionId, llmProvider, setLLMProvider } = useSession();
   const { llmConfig, updateLLMConfig } = useConfig();
-  const hasSession = !!session?.session_id;
+  const hasSession = !!sessionId;
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Sync configStore -> sessionStore on mount (if configStore has provider set)

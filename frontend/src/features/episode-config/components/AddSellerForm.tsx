@@ -179,6 +179,32 @@ export function AddSellerForm({ initialSeller, onAdd, onSave, onCancel, error, o
         </div>
 
         <div>
+          <button
+            type="button"
+            onClick={() => setSeller((s) => ({ ...s, _showPrompt: !((s as any)._showPrompt) }))}
+            className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 mb-3"
+          >
+            <svg className={`w-4 h-4 transition-transform ${(seller as any)._showPrompt ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            Advanced: Custom Prompt
+          </button>
+          {(seller as any)._showPrompt && (
+            <div className="mb-4">
+              <textarea
+                value={seller.custom_prompt || ''}
+                onChange={(e) => setSeller((s) => ({ ...s, custom_prompt: e.target.value }))}
+                placeholder="Add custom instructions for your seller bot (optional). This will be appended to the system prompt."
+                maxLength={500}
+                rows={3}
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+              />
+              <p className="text-xs text-neutral-400 mt-1">{(seller.custom_prompt || '').length}/500</p>
+            </div>
+          )}
+        </div>
+
+        <div>
           <label className="block text-sm font-medium text-neutral-700 mb-3">Inventory</label>
           <div className="space-y-4">
             {seller.inventory.map((item, itemIndex) => (

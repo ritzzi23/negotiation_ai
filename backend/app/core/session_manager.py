@@ -139,7 +139,8 @@ class SessionManager:
             buyer = Buyer(
                 id=buyer_id,
                 session_id=session_id,
-                name=request.buyer.name
+                name=request.buyer.name,
+                custom_prompt=getattr(request.buyer, 'custom_prompt', None),
             )
             db.add(buyer)
             db.flush()
@@ -183,7 +184,8 @@ class SessionManager:
                     name=seller_config.name,
                     priority=seller_config.profile.priority,
                     speaking_style=seller_config.profile.speaking_style,
-                    strategy=getattr(seller_config.profile, 'strategy', 'firm_pricing')
+                    strategy=getattr(seller_config.profile, 'strategy', 'firm_pricing'),
+                    custom_prompt=getattr(seller_config, 'custom_prompt', None),
                 )
                 db.add(seller)
                 db.flush()
@@ -401,6 +403,37 @@ class SessionManager:
                 "llm_model": session.llm_model
             }
     
+    def list_sessions(self) -> list:
+        """List all sessions with summary info."""
+        with get_db() as db:
+            sessions = db.query(SessionModel).order_by(SessionModel.created_at.desc()).all()
+            result = []
+            for session in sessions:
+                buyer = db.query(Buyer).filter(Buyer.session_id == session.id).first()
+                runs = db.query(NegotiationRun).filter(NegotiationRun.session_id == session.id).all()
+                completed = [r for r in runs if r.status == 'completed']
+
+                # Calculate total savings
+                total_savings = 0.0
+                for run in completed:
+                    outcome = db.query(NegotiationOutcome).filter(
+                        NegotiationOutcome.negotiation_run_id == run.id
+                    ).first()
+                    if outcome and outcome.card_savings:
+                        total_savings += outcome.card_savings
+
+                result.append({
+                    "session_id": session.id,
+                    "status": session.status,
+                    "created_at": session.created_at.isoformat(),
+                    "buyer_name": buyer.name if buyer else "Unknown",
+                    "total_runs": len(runs),
+                    "completed_runs": len(completed),
+                    "total_savings": total_savings,
+                    "llm_model": session.llm_model,
+                })
+            return result
+
     def delete_session(self, session_id: str) -> Dict:
         """
         Delete a session and all related data.

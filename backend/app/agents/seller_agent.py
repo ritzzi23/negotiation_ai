@@ -28,7 +28,7 @@ class SellerAgent:
         seller: Seller,
         inventory_item: InventoryItem,
         *,
-        temperature: float = 0.0,
+        temperature: float = 0.7,
         max_tokens: int = 1024
     ):
         """

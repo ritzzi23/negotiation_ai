@@ -34,10 +34,10 @@ function isBuyerConfig(x: unknown): x is BuyerConfig {
     x.shopping_list.every(
       (i: unknown) =>
         isObject(i) &&
-        typeof (i as ShoppingItemLike).item_name === 'string' &&
-        typeof (i as ShoppingItemLike).quantity_needed === 'number' &&
-        typeof (i as ShoppingItemLike).min_price_per_unit === 'number' &&
-        typeof (i as ShoppingItemLike).max_price_per_unit === 'number'
+        typeof (i as unknown as ShoppingItemLike).item_name === 'string' &&
+        typeof (i as unknown as ShoppingItemLike).quantity_needed === 'number' &&
+        typeof (i as unknown as ShoppingItemLike).min_price_per_unit === 'number' &&
+        typeof (i as unknown as ShoppingItemLike).max_price_per_unit === 'number'
     )
   );
 }
