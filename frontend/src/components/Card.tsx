@@ -10,7 +10,7 @@ interface CardProps {
 
 export function Card({ children, header, footer, className }: CardProps) {
   return (
-    <div className={clsx('card', className)}>
+    <div className={clsx('card transition-shadow hover:shadow-md', className)}>
       {header && (
         <div className="px-6 py-4 border-b border-neutral-200">
           {header}

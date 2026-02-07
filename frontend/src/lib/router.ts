@@ -10,6 +10,7 @@ export const ROUTES = {
   NEGOTIATION_ROOM: (roomId: string) => `/negotiations/${roomId}`,
   SUMMARY: '/summary',
   MOBILE: '/mobile',
+  HISTORY: '/history',
 } as const;
 
 // Navigation helpers

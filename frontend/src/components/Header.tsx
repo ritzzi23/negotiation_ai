@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from '@/store/sessionStore';
 import { useConfig } from '@/store/configStore';
@@ -11,6 +11,7 @@ export function Header() {
   const { session, llmProvider, setLLMProvider } = useSession();
   const { llmConfig, updateLLMConfig } = useConfig();
   const hasSession = !!session?.session_id;
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Sync configStore -> sessionStore on mount (if configStore has provider set)
   useEffect(() => {
@@ -45,25 +46,49 @@ export function Header() {
   const displayProvider = llmConfig.provider || llmProvider;
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-neutral-200 shadow-sm">
-      <div className="container mx-auto px-4 py-3">
+    <header className="sticky top-0 z-50 bg-white border-b border-neutral-200">
+      <div className="container-custom py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-6">
-            <Link href={ROUTES.HOME} className="flex items-center space-x-2 text-neutral-900 hover:text-primary-600">
-              <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <span className="text-lg font-bold">DealForge</span>
+          <div className="flex items-center gap-6">
+            <Link href={ROUTES.HOME} className="flex items-center space-x-3 text-neutral-900 hover:text-primary-700">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-300 bg-white text-sm font-semibold">DF</span>
+              <span className="text-lg font-semibold tracking-tight">DealForge</span>
             </Link>
-            <nav className="flex items-center gap-3 text-sm">
+            <nav className="hidden md:flex items-center gap-4 text-sm">
               <Link href={ROUTES.ADMIN} className="text-neutral-600 hover:text-neutral-900">Admin</Link>
               <Link href={ROUTES.SELLER} className="text-neutral-600 hover:text-neutral-900">Seller</Link>
               <Link href={ROUTES.BUYER} className="text-neutral-600 hover:text-neutral-900">Buyer</Link>
+              <Link href={ROUTES.HISTORY} className="text-neutral-600 hover:text-neutral-900">History</Link>
               {hasSession && (
-                <Link href={ROUTES.NEGOTIATIONS} className="text-primary-600 hover:text-primary-700 font-medium">Negotiations</Link>
+                <Link href={ROUTES.NEGOTIATIONS} className="text-primary-700 hover:text-primary-800 font-medium">Negotiations</Link>
               )}
             </nav>
           </div>
+          <div className="hidden md:block">
+            <ProviderSelector selectedProvider={displayProvider} onProviderChange={handleProviderChange} />
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen((open) => !open)}
+            className="inline-flex items-center justify-center rounded-xl border border-neutral-200 p-2 text-neutral-700 hover:bg-neutral-50 md:hidden"
+            aria-label="Toggle navigation"
+            aria-expanded={mobileNavOpen}
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+        <div className={`${mobileNavOpen ? 'mt-3 flex' : 'hidden'} flex-col gap-3 md:hidden`}>
+          <nav className="flex flex-col gap-2 text-sm">
+            <Link href={ROUTES.ADMIN} className="text-neutral-600 hover:text-neutral-900">Admin</Link>
+            <Link href={ROUTES.SELLER} className="text-neutral-600 hover:text-neutral-900">Seller</Link>
+            <Link href={ROUTES.BUYER} className="text-neutral-600 hover:text-neutral-900">Buyer</Link>
+            <Link href={ROUTES.HISTORY} className="text-neutral-600 hover:text-neutral-900">History</Link>
+            {hasSession && (
+              <Link href={ROUTES.NEGOTIATIONS} className="text-primary-700 hover:text-primary-800 font-medium">Negotiations</Link>
+            )}
+          </nav>
           <ProviderSelector selectedProvider={displayProvider} onProviderChange={handleProviderChange} />
         </div>
       </div>

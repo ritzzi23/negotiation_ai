@@ -64,7 +64,7 @@ export default function NegotiationsDashboard() {
       <div className="container-custom py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
             <button
               onClick={() => router.push(ROUTES.HOME)}
               className="inline-flex items-center text-sm text-neutral-600 hover:text-neutral-900"
@@ -97,6 +97,30 @@ export default function NegotiationsDashboard() {
         {error && (
           <ErrorMessage message={error} onDismiss={() => setError(null)} className="mb-6" />
         )}
+
+        {/* Mobile Mini Dashboard */}
+        <div className="md:hidden mb-8">
+          <h2 className="text-lg font-semibold text-neutral-900 mb-3">Active Rooms</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {negotiationRooms.filter((room) => room.status === NegotiationStatus.ACTIVE).length === 0 ? (
+              <div className="text-sm text-neutral-500">No active negotiations</div>
+            ) : (
+              negotiationRooms
+                .filter((room) => room.status === NegotiationStatus.ACTIVE)
+                .map((room) => (
+                  <button
+                    key={room.room_id}
+                    onClick={() => router.push(ROUTES.NEGOTIATION_ROOM(room.room_id))}
+                    className="min-w-[220px] rounded-2xl border border-neutral-200 bg-white p-4 text-left shadow-sm"
+                  >
+                    <p className="text-xs uppercase tracking-wide text-neutral-500">Active</p>
+                    <h3 className="mt-1 text-base font-semibold text-neutral-900">{room.item_name}</h3>
+                    <p className="text-xs text-neutral-500 mt-1">Qty {room.quantity_needed} · Round {room.current_round || 0}</p>
+                  </button>
+                ))
+            )}
+          </div>
+        </div>
 
         {/* Progress Widget */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-neutral-200 mb-8">

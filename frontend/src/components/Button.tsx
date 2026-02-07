@@ -20,19 +20,19 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-2xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variantClasses = {
-    primary: 'bg-primary text-white hover:bg-primary-600 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-    secondary: 'bg-secondary text-white hover:bg-secondary-600 focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2',
-    danger: 'bg-danger text-white hover:bg-danger-600 focus:ring-2 focus:ring-danger-500 focus:ring-offset-2',
-    ghost: 'bg-transparent text-neutral-700 hover:bg-neutral-100 focus:ring-2 focus:ring-neutral-300',
+    primary: 'bg-primary-600 text-white shadow-sm shadow-primary-200/60 hover:bg-primary-700 hover:-translate-y-0.5',
+    secondary: 'border border-neutral-300 text-neutral-900 hover:bg-neutral-50 hover:-translate-y-0.5',
+    danger: 'bg-danger-600 text-white hover:bg-danger-500',
+    ghost: 'text-neutral-700 hover:bg-neutral-50',
   };
 
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    md: 'px-4 py-2 text-sm',
+    lg: 'px-6 py-3 text-base',
   };
 
   return (

@@ -49,7 +49,7 @@ export function Modal({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
@@ -57,7 +57,7 @@ export function Modal({
       <div className="flex min-h-full items-center justify-center p-4">
         <div
           className={clsx(
-            'relative bg-white rounded-lg shadow-xl w-full animate-fade-in',
+            'relative bg-white rounded-2xl shadow-xl w-full animate-fade-in border border-neutral-200',
             sizeClasses[size]
           )}
           onClick={(e) => e.stopPropagation()}

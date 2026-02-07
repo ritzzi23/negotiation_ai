@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from .database import get_db
 from .models import (
-    Session as SessionModel, Buyer, BuyerItem, Seller, SellerInventory,
+    Session as SessionModel, Buyer, BuyerItem, Seller, SellerInventory, Product,
     NegotiationRun, NegotiationParticipant, Message, Offer, NegotiationOutcome,
     CreditCardRecord,
 )
@@ -90,6 +90,35 @@ class SessionManager:
             InitializeSessionResponse with session_id and rooms
         """
         with get_db() as db:
+            def get_or_create_product(
+                item_id: str,
+                item_name: str,
+                variant: Optional[str] = None,
+                size_value: Optional[float] = None,
+                size_unit: Optional[str] = None,
+            ) -> Product:
+                product = db.query(Product).filter(Product.id == item_id).first()
+                if product:
+                    # Keep name in sync if it changes (best-effort)
+                    if item_name and product.name != item_name:
+                        product.name = item_name
+                    if variant and not product.variant:
+                        product.variant = variant
+                    if size_value is not None and size_unit and (product.size_value is None or not product.size_unit):
+                        product.size_value = size_value
+                        product.size_unit = size_unit
+                    return product
+                product = Product(
+                    id=item_id,
+                    name=item_name,
+                    variant=variant,
+                    size_value=size_value,
+                    size_unit=size_unit,
+                )
+                db.add(product)
+                db.flush()
+                return product
+
             # Create session
             session_id = str(uuid.uuid4())
             # Use provider from request if specified, otherwise use global settings
@@ -118,11 +147,22 @@ class SessionManager:
             # Create buyer items
             buyer_items = []
             for item in request.buyer.shopping_list:
+                product = get_or_create_product(
+                    item.item_id,
+                    item.item_name,
+                    variant=item.variant,
+                    size_value=item.size_value,
+                    size_unit=item.size_unit,
+                )
                 buyer_item = BuyerItem(
                     id=str(uuid.uuid4()),
                     buyer_id=buyer_id,
+                    product_id=product.id,
                     item_id=item.item_id,
                     item_name=item.item_name,
+                    variant=item.variant or product.variant,
+                    size_value=item.size_value if item.size_value is not None else product.size_value,
+                    size_unit=item.size_unit or product.size_unit,
                     quantity_needed=item.quantity_needed,
                     min_price_per_unit=item.min_price_per_unit,
                     max_price_per_unit=item.max_price_per_unit
@@ -151,11 +191,22 @@ class SessionManager:
                 # Create seller inventory
                 inventory_list = []
                 for inv_item in seller_config.inventory:
+                    product = get_or_create_product(
+                        inv_item.item_id,
+                        inv_item.item_name,
+                        variant=inv_item.variant,
+                        size_value=inv_item.size_value,
+                        size_unit=inv_item.size_unit,
+                    )
                     seller_inv = SellerInventory(
                         id=str(uuid.uuid4()),
                         seller_id=seller_id,
+                        product_id=product.id,
                         item_id=inv_item.item_id,
                         item_name=inv_item.item_name,
+                        variant=inv_item.variant or product.variant,
+                        size_value=inv_item.size_value if inv_item.size_value is not None else product.size_value,
+                        size_unit=inv_item.size_unit or product.size_unit,
                         cost_price=inv_item.cost_price,
                         selling_price=inv_item.selling_price,
                         least_price=inv_item.least_price,
@@ -472,8 +523,12 @@ class SessionManager:
             
             inventory = [
                 InventoryItem(
+                    product_id=inv.product_id,
                     item_id=inv.item_id,
                     item_name=inv.item_name,
+                    variant=inv.variant,
+                    size_value=inv.size_value,
+                    size_unit=inv.size_unit,
                     cost_price=inv.cost_price,
                     selling_price=inv.selling_price,
                     least_price=inv.least_price,
@@ -494,8 +549,12 @@ class SessionManager:
             ))
         
         buyer_constraints = BuyerConstraints(
+            product_id=buyer_item.product_id,
             item_id=buyer_item.item_id,
             item_name=buyer_item.item_name,
+            variant=buyer_item.variant,
+            size_value=buyer_item.size_value,
+            size_unit=buyer_item.size_unit,
             quantity_needed=buyer_item.quantity_needed,
             min_price_per_unit=buyer_item.min_price_per_unit,
             max_price_per_unit=buyer_item.max_price_per_unit

@@ -55,10 +55,10 @@ export function RadioGroup({
               value={option.value}
               checked={value === option.value}
               onChange={(e) => onChange(e.target.value)}
-              className="mt-0.5 h-4 w-4 text-primary-600 border-neutral-300 focus:ring-2 focus:ring-primary-500 cursor-pointer"
+              className="mt-0.5 h-4 w-4 text-primary-700 border-neutral-300 focus:ring-2 focus:ring-primary-300 cursor-pointer"
             />
             <div className="ml-3">
-              <span className="block text-sm font-medium text-neutral-900 group-hover:text-primary-600">
+              <span className="block text-sm font-medium text-neutral-900 group-hover:text-primary-700">
                 {option.label}
               </span>
               {option.description && (

@@ -6,15 +6,22 @@
   * {
     @apply border-neutral-200;
   }
-  
+
   body {
-    @apply bg-neutral-50 text-neutral-900 antialiased;
+    @apply bg-white text-neutral-900 antialiased;
   }
-  
+
+  ::selection {
+    background: #d9e4ff;
+    color: #0f172a;
+  }
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
+    @apply font-semibold text-neutral-900;
+    font-family: var(--font-display), Georgia, serif;
+    letter-spacing: -0.015em;
   }
-  
+
   h1 {
     @apply text-4xl;
   }
@@ -30,15 +37,27 @@
 
 @layer components {
   .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
   }
-  
+
   .card {
-    @apply bg-white rounded-lg border border-neutral-200 shadow-sm;
+    @apply bg-white rounded-2xl border border-neutral-200 shadow-sm;
   }
-  
+
   .mention {
     @apply bg-warning-100 text-warning-800 px-1 rounded font-medium;
+  }
+
+  .page-section {
+    @apply bg-white border border-neutral-200 rounded-2xl shadow-sm;
+  }
+
+  .surface {
+    @apply bg-white border border-neutral-200 rounded-2xl shadow-sm;
+  }
+
+  .interactive-tile {
+    @apply transition-transform duration-200 hover:-translate-y-1 hover:shadow-md;
   }
 }
 
@@ -46,10 +65,19 @@
   .animate-typing {
     animation: typing 1.4s infinite;
   }
+
+  .animate-fade-up {
+    animation: fade-up 0.3s ease-out;
+  }
   
   @keyframes typing {
     0%, 100% { opacity: 0.2; }
     50% { opacity: 1; }
+  }
+
+  @keyframes fade-up {
+    0% { opacity: 0; transform: translateY(6px); }
+    100% { opacity: 1; transform: translateY(0); }
   }
 }
 

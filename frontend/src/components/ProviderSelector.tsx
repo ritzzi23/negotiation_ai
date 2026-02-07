@@ -44,16 +44,16 @@ export function ProviderSelector({ selectedProvider, onProviderChange }: Provide
   const providerName = status?.llm?.provider ?? 'unknown';
 
   return (
-    <div className="flex items-center gap-4 p-3 bg-white rounded-lg border border-neutral-200 shadow-sm">
+    <div className="flex w-full flex-wrap items-center gap-2 rounded-2xl border border-neutral-200 bg-white px-3 py-2 text-[11px] sm:text-xs md:w-auto md:flex-nowrap">
       <div className="flex items-center gap-2">
-        <label htmlFor="provider-select" className="text-sm font-medium text-neutral-700">
-          LLM Provider:
+        <label htmlFor="provider-select" className="text-xs font-medium text-neutral-600">
+          Provider
         </label>
         <select
           id="provider-select"
           value={selectedProvider}
           onChange={(e) => handleProviderChange(e.target.value as Provider)}
-          className="px-3 py-1.5 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="rounded-full border border-neutral-300 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary-300"
         >
           <option value="openrouter">OpenRouter</option>
           <option value="lm_studio">LM Studio</option>
@@ -64,7 +64,7 @@ export function ProviderSelector({ selectedProvider, onProviderChange }: Provide
         {loading ? (
           <span className="text-xs text-neutral-500">Checking...</span>
         ) : error ? (
-          <span className="text-xs text-danger-600">Error: {error}</span>
+          <span className="text-xs text-danger-600">{error}</span>
         ) : (
           <>
             <div
@@ -78,10 +78,6 @@ export function ProviderSelector({ selectedProvider, onProviderChange }: Provide
             </span>
           </>
         )}
-      </div>
-
-      <div className="text-xs text-neutral-500 italic">
-        Note: Backend provider is set via environment variable. Restart backend to change.
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import type { BuyerDecision } from '@/lib/types';
 import { formatCurrency, formatDuration } from '@/utils/formatters';
 import { ROUTES } from '@/lib/router';
+import { jsPDF } from 'jspdf';
 
 interface DecisionModalProps {
   isOpen: boolean;
@@ -29,6 +30,108 @@ export function DecisionModal({
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
 
+  const handleDownloadInvoice = () => {
+    const agreementId = `DF-${Date.now()}`;
+    const issuedAt = new Date().toLocaleString();
+    const buyerName = 'Buyer';
+    const sellerName = decision.seller_name || 'Seller';
+    const pricePerUnit = formatCurrency(decision.final_price || 0);
+    const quantity = decision.quantity || 0;
+    const total = formatCurrency(decision.total_cost || 0);
+    const effectiveTotal = decision.effective_total != null
+      ? formatCurrency(decision.effective_total)
+      : null;
+    const cardLine = decision.recommended_card
+      ? `${decision.recommended_card}${decision.card_savings ? ` (saves ${formatCurrency(decision.card_savings)})` : ''}`
+      : 'None';
+
+    const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 48;
+    const contentWidth = pageWidth - margin * 2;
+    let y = 56;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('DealForge Invoice Agreement', margin, y);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Agreement ID: ${agreementId}`, pageWidth - margin, y, { align: 'right' });
+    y += 18;
+    doc.text(`Issued: ${issuedAt}`, pageWidth - margin, y, { align: 'right' });
+
+    y += 28;
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(margin, y, contentWidth, 96, 10, 10);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('BUYER', margin + 16, y + 20);
+    doc.text('SELLER', margin + contentWidth / 2, y + 20);
+    doc.text('ITEM', margin + 16, y + 56);
+    doc.text('QUANTITY', margin + contentWidth / 2, y + 56);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text(buyerName, margin + 16, y + 38);
+    doc.text(sellerName, margin + contentWidth / 2, y + 38);
+    doc.text(itemName, margin + 16, y + 74);
+    doc.text(`${quantity} units`, margin + contentWidth / 2, y + 74);
+
+    y += 124;
+    doc.roundedRect(margin, y, contentWidth, 160, 10, 10);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('DESCRIPTION', margin + 16, y + 24);
+    doc.text('UNIT PRICE', margin + 240, y + 24);
+    doc.text('QTY', margin + 360, y + 24);
+    doc.text('TOTAL', margin + 420, y + 24);
+    doc.setDrawColor(226, 232, 240);
+    doc.line(margin + 16, y + 32, margin + contentWidth - 16, y + 32);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
+    doc.text(itemName, margin + 16, y + 56);
+    doc.text(pricePerUnit, margin + 240, y + 56);
+    doc.text(String(quantity), margin + 360, y + 56);
+    doc.text(total, margin + 420, y + 56);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Agreed Total', margin + 16, y + 104);
+    doc.setFont('helvetica', 'normal');
+    doc.text(total, margin + 420, y + 104);
+
+    if (effectiveTotal) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Effective Total (after rewards)', margin + 16, y + 126);
+      doc.setFont('helvetica', 'normal');
+      doc.text(effectiveTotal, margin + 420, y + 126);
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Recommended Card', margin + 16, y + 148);
+    doc.setFont('helvetica', 'normal');
+    const cardText = doc.splitTextToSize(cardLine, contentWidth - 140);
+    doc.text(cardText, margin + 140, y + 148);
+
+    y += 184;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    const noteText = doc.splitTextToSize(
+      'This agreement reflects the negotiated terms for the listed item. Payment terms, delivery, and fulfillment are handled directly between buyer and seller. DealForge provides negotiation transparency and supports record-keeping for audit purposes.',
+      contentWidth
+    );
+    doc.text(noteText, margin, y);
+
+    y += 60;
+    doc.line(margin, y, margin + 220, y);
+    doc.line(margin + contentWidth - 220, y, margin + contentWidth, y);
+    doc.setFontSize(9);
+    doc.text('Buyer Signature', margin, y + 14);
+    doc.text('Seller Signature', margin + contentWidth - 220, y + 14);
+
+    doc.save(`dealforge-invoice-${agreementId}.pdf`);
+  };
+
   const handleViewSummary = async () => {
     setIsNavigating(true);
     
@@ -49,8 +152,10 @@ export function DecisionModal({
       <div className="text-center py-6">
         {/* Celebration Icon */}
         <div className="mb-6">
-          <div className="w-20 h-20 bg-secondary-100 rounded-full flex items-center justify-center mx-auto animate-pulse">
-            <span className="text-4xl">🎉</span>
+          <div className="w-20 h-20 bg-secondary-100 rounded-full flex items-center justify-center mx-auto">
+            <svg className="w-10 h-10 text-secondary-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
           </div>
         </div>
 
@@ -142,14 +247,19 @@ export function DecisionModal({
             <div>
               <p className="text-sm text-neutral-600">Status</p>
               <p className="text-sm font-semibold text-secondary-600 mt-1">
-                {decision.selected_seller_id ? '✓ Completed' : '✗ No Deal'}
+                {decision.selected_seller_id ? 'Completed' : 'No deal'}
               </p>
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-center space-x-4">
+        <div className="flex flex-wrap justify-center gap-3">
+          {decision.selected_seller_id && (
+            <Button variant="secondary" onClick={handleDownloadInvoice}>
+              Download Invoice Agreement
+            </Button>
+          )}
           <Button variant="ghost" onClick={handleNextItem} disabled={isNavigating}>
             Next Item
           </Button>

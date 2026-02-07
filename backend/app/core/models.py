@@ -18,6 +18,30 @@ import uuid
 from .database import Base
 
 
+class Product(Base):
+    """Product catalog table - canonical products referenced by buyers/sellers."""
+    __tablename__ = "products"
+
+    id = Column(String(50), primary_key=True)
+    name = Column(String(100), nullable=False)
+    sku = Column(String(100), nullable=True)
+    variant = Column(String(100), nullable=True)
+    size_value = Column(Float, nullable=True)
+    size_unit = Column(String(20), nullable=True)
+    category = Column(String(50), nullable=True)
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+
+    # Relationships
+    buyer_items = relationship("BuyerItem", back_populates="product")
+    seller_inventory = relationship("SellerInventory", back_populates="product")
+
+    __table_args__ = (
+        Index("idx_products_name", "name"),
+        Index("idx_products_sku", "sku"),
+    )
+
+
 class Session(Base):
     """Session table - represents a configured marketplace episode."""
     __tablename__ = "sessions"
@@ -70,8 +94,12 @@ class BuyerItem(Base):
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     buyer_id = Column(String(36), ForeignKey("buyers.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(String(50), ForeignKey("products.id"), nullable=True)
     item_id = Column(String(50), nullable=False)
     item_name = Column(String(100), nullable=False)
+    variant = Column(String(100), nullable=True)
+    size_value = Column(Float, nullable=True)
+    size_unit = Column(String(20), nullable=True)
     quantity_needed = Column(Integer, CheckConstraint("quantity_needed > 0"), nullable=False)
     min_price_per_unit = Column(Float, CheckConstraint("min_price_per_unit >= 0"), nullable=False)
     max_price_per_unit = Column(Float, nullable=False)
@@ -79,11 +107,13 @@ class BuyerItem(Base):
     
     # Relationships
     buyer = relationship("Buyer", back_populates="buyer_items")
+    product = relationship("Product", back_populates="buyer_items")
     negotiation_runs = relationship("NegotiationRun", back_populates="buyer_item", cascade="all, delete-orphan")
     
     __table_args__ = (
         CheckConstraint("max_price_per_unit > min_price_per_unit"),
         Index("idx_buyer_items_buyer", "buyer_id"),
+        Index("idx_buyer_items_product", "product_id"),
     )
 
 
@@ -130,8 +160,12 @@ class SellerInventory(Base):
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     seller_id = Column(String(36), ForeignKey("sellers.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(String(50), ForeignKey("products.id"), nullable=True)
     item_id = Column(String(50), nullable=False)
     item_name = Column(String(100), nullable=False)
+    variant = Column(String(100), nullable=True)
+    size_value = Column(Float, nullable=True)
+    size_unit = Column(String(20), nullable=True)
     cost_price = Column(Float, CheckConstraint("cost_price >= 0"), nullable=False)
     selling_price = Column(Float, CheckConstraint("selling_price > cost_price"), nullable=False)
     least_price = Column(Float, nullable=False)
@@ -140,12 +174,14 @@ class SellerInventory(Base):
     
     # Relationships
     seller = relationship("Seller", back_populates="inventory")
+    product = relationship("Product", back_populates="seller_inventory")
     
     __table_args__ = (
         CheckConstraint("least_price > cost_price AND least_price < selling_price"),
         UniqueConstraint("seller_id", "item_id", name="uq_seller_inventory_item"),
         Index("idx_seller_inventory_seller", "seller_id"),
         Index("idx_seller_inventory_item", "item_id"),
+        Index("idx_seller_inventory_product", "product_id"),
     )
 
 

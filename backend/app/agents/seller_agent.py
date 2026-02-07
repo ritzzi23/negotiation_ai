@@ -93,11 +93,11 @@ class SellerAgent:
             message_text = self._sanitize_message(result.text)
             
             # Parse offer from JSON block if present
-            offer = self._parse_offer(result.text)
+            offer = self._parse_offer(result.text, default_quantity=constraints.quantity_needed)
             
             # Clamp offer to constraints
             if offer:
-                offer = self._clamp_offer(offer)
+                offer = self._clamp_offer(offer, max_quantity=constraints.quantity_needed)
             
             # Fallback: if message is empty but offer exists, generate a basic message
             if not message_text and offer:
@@ -193,7 +193,7 @@ class SellerAgent:
         
         return text
     
-    def _parse_offer(self, text: str) -> Optional[Offer]:
+    def _parse_offer(self, text: str, default_quantity: Optional[int] = None) -> Optional[Offer]:
         """
         Parse offer from LLM output - try JSON first, then regex fallback.
         
@@ -262,7 +262,7 @@ class SellerAgent:
         # If we found price, return offer (use default quantity if not found)
         if price is not None:
             if quantity is None:
-                quantity = self.inventory_item.quantity_available
+                quantity = default_quantity if default_quantity else self.inventory_item.quantity_available
             return {
                 "price": price,
                 "quantity": quantity
@@ -270,7 +270,7 @@ class SellerAgent:
         
         return None
     
-    def _clamp_offer(self, offer: Offer) -> Optional[Offer]:
+    def _clamp_offer(self, offer: Offer, max_quantity: Optional[int] = None) -> Optional[Offer]:
         """
         Clamp offer to seller's constraints.
         
@@ -294,9 +294,11 @@ class SellerAgent:
         price = max(self.inventory_item.least_price, price)
         price = min(self.inventory_item.selling_price, price)
         
-        # Clamp quantity to [1, quantity_available]
+        # Clamp quantity to [1, min(quantity_available, max_quantity)]
         quantity = max(1, quantity)
         quantity = min(self.inventory_item.quantity_available, quantity)
+        if max_quantity is not None:
+            quantity = min(max_quantity, quantity)
         
         # Validate final offer
         if price < self.inventory_item.least_price:

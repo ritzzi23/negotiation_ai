@@ -47,7 +47,7 @@ export default function SellerPage() {
                 {sellers.map((s, i) => (
                   <li
                     key={i}
-                    className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0"
+                    className="flex flex-col gap-2 py-2 border-b border-neutral-100 last:border-0 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
                       <span className="font-medium text-neutral-900">{s.name}</span>
@@ -55,7 +55,7 @@ export default function SellerPage() {
                         ({s.inventory.length} item{s.inventory.length !== 1 ? 's' : ''})
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Button
                         variant="secondary"
                         size="sm"

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
+import { ProductAutocompleteInput } from '@/components/ProductAutocompleteInput';
 import { NumberInput } from '@/components/NumberInput';
 import { Button } from '@/components/Button';
 import type { BuyerConfig, ShoppingItem } from '@/lib/types';
@@ -21,6 +22,9 @@ function cloneBuyer(b: BuyerConfig): BuyerConfig {
       ...item,
       item_id: item.item_id,
       item_name: item.item_name,
+      variant: item.variant,
+      size_value: item.size_value,
+      size_unit: item.size_unit,
       quantity_needed: item.quantity_needed,
       min_price_per_unit: item.min_price_per_unit,
       max_price_per_unit: item.max_price_per_unit,
@@ -56,6 +60,9 @@ export function AddBuyerForm({ initialBuyer, onAdd, onSave, onCancel, error, onC
     const newItem: ShoppingItem = {
       item_id: `item_${generateId()}`,
       item_name: '',
+      variant: '',
+      size_value: undefined,
+      size_unit: '',
       quantity_needed: 1,
       min_price_per_unit: 0,
       max_price_per_unit: 100,
@@ -133,11 +140,22 @@ export function AddBuyerForm({ initialBuyer, onAdd, onSave, onCancel, error, onC
             {buyer.shopping_list.map((item, index) => (
               <div key={item.item_id} className="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Input
+                  <ProductAutocompleteInput
                     label="Item name"
                     value={item.item_name}
-                    onChange={(e) => updateItem(index, { ...item, item_name: e.target.value })}
+                    onValueChange={(value) => updateItem(index, { ...item, item_name: value })}
+                    onSelectProduct={(product) =>
+                      updateItem(index, {
+                        ...item,
+                        item_id: product.id,
+                        item_name: product.name,
+                        variant: product.variant || '',
+                        size_value: product.size_value ?? undefined,
+                        size_unit: product.size_unit || '',
+                      })
+                    }
                     placeholder="e.g. Laptop"
+                    helpText="Start typing to search the catalog"
                   />
                   <NumberInput
                     label="Quantity"
@@ -158,6 +176,32 @@ export function AddBuyerForm({ initialBuyer, onAdd, onSave, onCancel, error, onC
                     onChange={(e) => updateItem(index, { ...item, max_price_per_unit: Number(e.target.value) })}
                     min={0}
                     step={0.01}
+                  />
+                </div>
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    label="Variant"
+                    value={item.variant || ''}
+                    onChange={(e) => updateItem(index, { ...item, variant: e.target.value })}
+                    placeholder="e.g. Bottle"
+                  />
+                  <NumberInput
+                    label="Size value"
+                    value={item.size_value ?? ''}
+                    onChange={(e) =>
+                      updateItem(index, {
+                        ...item,
+                        size_value: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
+                      })
+                    }
+                    min={0.01}
+                    step={0.01}
+                  />
+                  <Input
+                    label="Size unit"
+                    value={item.size_unit || ''}
+                    onChange={(e) => updateItem(index, { ...item, size_unit: e.target.value })}
+                    placeholder="e.g. ml"
                   />
                 </div>
                 <div className="mt-3 flex justify-end">

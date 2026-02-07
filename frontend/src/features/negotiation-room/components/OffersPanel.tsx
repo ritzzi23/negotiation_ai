@@ -122,10 +122,10 @@ export function OffersPanel({ roomId, itemName, constraints, sellers }: OffersPa
                         <span className="text-sm font-normal text-neutral-600">/unit</span>
                       </p>
                       <p className="text-sm text-neutral-600">
-                        📦 Quantity: {offer.quantity} units
+                        Quantity: {offer.quantity} units
                       </p>
                       <p className="text-xs text-neutral-500">
-                        🕐 Updated {formatRelativeTime(offer.timestamp)}
+                        Updated {formatRelativeTime(offer.timestamp)}
                       </p>
                     </div>
                   </div>

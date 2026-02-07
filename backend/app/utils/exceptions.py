@@ -54,3 +54,8 @@ class InsufficientInventoryError(APIException):
     """Insufficient inventory error."""
     pass
 
+
+class ProductNotFoundError(APIException):
+    """Product not found error."""
+    pass
+

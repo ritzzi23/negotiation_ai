@@ -9,6 +9,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { OffersPanel } from '@/features/negotiation-room/components/OffersPanel';
 import { ChatPanel } from '@/features/negotiation-room/components/ChatPanel';
+import { NegotiationTimeline } from '@/features/negotiation-room/components/NegotiationTimeline';
 import { DecisionModal } from '@/features/negotiation-room/components/DecisionModal';
 import { ForceDecisionModal } from '@/features/negotiation-room/components/ForceDecisionModal';
 import { useNegotiationStream } from '@/features/negotiation-room/hooks/useNegotiationStream';
@@ -143,8 +144,8 @@ export default function NegotiationRoomPage({ params }: { params: { roomId: stri
     <div className="min-h-screen bg-neutral-50">
       <div className="container-custom py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 bg-white rounded-lg p-4 shadow-sm border border-neutral-200">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 bg-white rounded-lg p-4 shadow-sm border border-neutral-200">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <button
               onClick={() => router.push(ROUTES.NEGOTIATIONS)}
               className="inline-flex items-center text-sm text-neutral-600 hover:text-neutral-900"
@@ -154,16 +155,16 @@ export default function NegotiationRoomPage({ params }: { params: { roomId: stri
               </svg>
               Back to Dashboard
             </button>
-            <div className="h-6 w-px bg-neutral-300" />
+            <div className="hidden sm:block h-6 w-px bg-neutral-300" />
             <div>
               <h1 className="text-xl font-bold text-neutral-900">{room.item_name} Negotiation</h1>
               <p className="text-sm text-neutral-600">
-                Want: {room.quantity_needed} units • Budget: ${room.buyer_constraints.min_price_per_unit} - $
+                Want: {room.quantity_needed} units - Budget: ${room.buyer_constraints.min_price_per_unit} - $
                 {room.buyer_constraints.max_price_per_unit} per unit
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="text-right">
               <p className="text-xs text-neutral-600">Round</p>
               <p className="text-lg font-bold text-primary-600">
@@ -183,6 +184,10 @@ export default function NegotiationRoomPage({ params }: { params: { roomId: stri
         {error && (
           <ErrorMessage message={error} onDismiss={() => setError(null)} className="mb-6" />
         )}
+
+        <div className="mb-6">
+          <NegotiationTimeline roomId={roomId} />
+        </div>
 
         {/* Split-screen Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -204,7 +209,7 @@ export default function NegotiationRoomPage({ params }: { params: { roomId: stri
 
         {/* Action Buttons - Hide for completed negotiations */}
         {room.status !== NegotiationStatus.COMPLETED && (
-          <div className="mt-6 flex justify-end space-x-4">
+          <div className="mt-6 flex flex-wrap justify-end gap-3">
             <Button variant="ghost" onClick={() => router.push(ROUTES.NEGOTIATIONS)}>
               Stop
             </Button>

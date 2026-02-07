@@ -64,18 +64,10 @@ export function ItemCard({ room }: ItemCardProps) {
     }
   };
 
-  const getItemIcon = (itemName: string) => {
-    const name = itemName.toLowerCase();
-    if (name.includes('laptop') || name.includes('computer')) return '💻';
-    if (name.includes('mouse')) return '🖱️';
-    if (name.includes('keyboard')) return '⌨️';
-    if (name.includes('phone')) return '📱';
-    if (name.includes('tablet')) return '📟';
-    if (name.includes('watch')) return '⌚';
-    if (name.includes('headphone') || name.includes('earphone')) return '🎧';
-    if (name.includes('camera')) return '📷';
-    if (name.includes('monitor') || name.includes('screen')) return '🖥️';
-    return '📦';
+  const getItemMonogram = (itemName: string) => {
+    const trimmed = itemName.trim();
+    if (!trimmed) return 'I';
+    return trimmed[0].toUpperCase();
   };
 
   return (
@@ -84,7 +76,9 @@ export function ItemCard({ room }: ItemCardProps) {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
-            <span className="text-4xl">{getItemIcon(room.item_name)}</span>
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50 text-lg font-semibold text-neutral-700">
+              {getItemMonogram(room.item_name)}
+            </span>
             <div>
               <h3 className="text-lg font-semibold text-neutral-900">{room.item_name}</h3>
               <p className="text-sm text-neutral-600">Quantity: {room.quantity_needed} units</p>
@@ -103,7 +97,7 @@ export function ItemCard({ room }: ItemCardProps) {
           <div className="bg-secondary-50 rounded-lg p-3 border border-secondary-200">
             <p className="text-xs font-medium text-secondary-700 mb-1">Final Deal:</p>
             <p className="text-sm font-semibold text-secondary-900">
-              {room.final_deal.seller_name} • {formatCurrency(room.final_deal.price)}/unit • {room.final_deal.quantity} units
+              {room.final_deal.seller_name} - {formatCurrency(room.final_deal.price)}/unit - {room.final_deal.quantity} units
             </p>
             <p className="text-xs text-secondary-600 mt-1">
               Total: {formatCurrency(room.final_deal.total_cost)}

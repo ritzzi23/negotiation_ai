@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useConfig } from '@/store/configStore';
 import { Card } from '@/components/Card';
 import { Input } from '@/components/Input';
+import { ProductAutocompleteInput } from '@/components/ProductAutocompleteInput';
 import { NumberInput } from '@/components/NumberInput';
 import { RadioGroup } from '@/components/RadioGroup';
 import { Button } from '@/components/Button';
@@ -34,6 +35,9 @@ export function SellersConfigForm() {
     const newItem: InventoryItem = {
       item_id: `item_${generateId()}`,
       item_name: '',
+      variant: '',
+      size_value: undefined,
+      size_unit: '',
       cost_price: 0,
       selling_price: 100,
       least_price: 50,
@@ -192,16 +196,27 @@ export function SellersConfigForm() {
                   {seller.inventory.map((item, itemIndex) => (
                     <div key={item.item_id} className="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
                       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <Input
+                        <ProductAutocompleteInput
                           label="Item"
                           value={item.item_name}
-                          onChange={(e) =>
+                          onValueChange={(value) =>
                             handleUpdateInventoryItem(sellerIndex, itemIndex, {
                               ...item,
-                              item_name: e.target.value,
+                              item_name: value,
+                            })
+                          }
+                          onSelectProduct={(product) =>
+                            handleUpdateInventoryItem(sellerIndex, itemIndex, {
+                              ...item,
+                              item_id: product.id,
+                              item_name: product.name,
+                              variant: product.variant || '',
+                              size_value: product.size_value ?? undefined,
+                              size_unit: product.size_unit || '',
                             })
                           }
                           placeholder="e.g., Laptop"
+                          helpText="Start typing to search the catalog"
                         />
                         <NumberInput
                           label="Cost"
@@ -249,6 +264,42 @@ export function SellersConfigForm() {
                             })
                           }
                           min={0}
+                        />
+                      </div>
+                      <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Input
+                          label="Variant"
+                          value={item.variant || ''}
+                          onChange={(e) =>
+                            handleUpdateInventoryItem(sellerIndex, itemIndex, {
+                              ...item,
+                              variant: e.target.value,
+                            })
+                          }
+                          placeholder="e.g. Bottle"
+                        />
+                        <NumberInput
+                          label="Size value"
+                          value={item.size_value ?? ''}
+                          onChange={(e) =>
+                            handleUpdateInventoryItem(sellerIndex, itemIndex, {
+                              ...item,
+                              size_value: Number(e.target.value) > 0 ? Number(e.target.value) : undefined,
+                            })
+                          }
+                          min={0.01}
+                          step={0.01}
+                        />
+                        <Input
+                          label="Size unit"
+                          value={item.size_unit || ''}
+                          onChange={(e) =>
+                            handleUpdateInventoryItem(sellerIndex, itemIndex, {
+                              ...item,
+                              size_unit: e.target.value,
+                            })
+                          }
+                          placeholder="e.g. ml"
                         />
                       </div>
                       <div className="mt-3 flex justify-end">

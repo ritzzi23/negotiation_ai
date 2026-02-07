@@ -1,16 +1,25 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Sora } from 'next/font/google';
 import '@/styles/globals.css';
 import { SessionProvider } from '@/store/sessionStore';
 import { ConfigProvider } from '@/store/configStore';
 import { NegotiationProvider } from '@/store/negotiationStore';
 import { Header } from '@/components/Header';
+import { ToastProvider } from '@/components/ToastProvider';
 
-const inter = Inter({ subsets: ['latin'] });
+const sora = Sora({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
+
+const soraDisplay = Sora({
+  subsets: ['latin'],
+  variable: '--font-display',
+});
 
 export const metadata: Metadata = {
-  title: 'Multi-Agent Marketplace',
-  description: 'Simulate ecommerce negotiations with AI-powered buyer & sellers',
+  title: 'DealForge',
+  description: 'Real-time AI negotiation across multiple sellers with transparent deal analysis.',
 };
 
 export default function RootLayout({
@@ -20,15 +29,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <SessionProvider>
-          <ConfigProvider>
-            <NegotiationProvider>
-              <Header />
-              {children}
-            </NegotiationProvider>
-          </ConfigProvider>
-        </SessionProvider>
+      <body className={`${sora.variable} ${soraDisplay.variable} font-sans`}>
+        <ToastProvider>
+          <SessionProvider>
+            <ConfigProvider>
+              <NegotiationProvider>
+                <Header />
+                {children}
+              </NegotiationProvider>
+            </ConfigProvider>
+          </SessionProvider>
+        </ToastProvider>
       </body>
     </html>
   );

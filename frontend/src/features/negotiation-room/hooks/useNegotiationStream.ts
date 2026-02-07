@@ -7,6 +7,8 @@ import { openNegotiationStream } from '@/lib/api/sse';
 import type { Message, Offer, NegotiationEvent } from '@/lib/types';
 import { SSE_RECONNECT_DELAY_BASE, MAX_RECONNECT_ATTEMPTS, NegotiationStatus } from '@/lib/constants';
 import { stripThinking } from '@/utils/formatters';
+import { findBestOffer } from '@/utils/helpers';
+import { useToast } from '@/components/ToastProvider';
 
 interface UseNegotiationStreamOptions {
   roomId: string;
@@ -30,13 +32,26 @@ export function useNegotiationStream({
     connectStream,
     disconnectStream,
     rooms,
+    recordRoundStart,
+    recordSellerResponse,
+    setRoundBestOffer,
+    setRoundCardSavings,
   } = useNegotiation();
-  const { updateNegotiationRoom, updateNegotiationRoomStatus } = useSession();
+  const { updateNegotiationRoom, updateNegotiationRoomStatus, negotiationRooms } = useSession();
+  const { pushToast } = useToast();
 
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const onErrorRef = useRef(onError);
   const onCompleteRef = useRef(onComplete);
+  const roundStartRef = useRef<Record<number, string>>({});
+  const roundResponseCountRef = useRef<Record<number, number>>({});
+  const roomsRef = useRef(rooms);
+  const bestOfferRef = useRef<{ sellerId: string; price: number } | null>(null);
+
+  useEffect(() => {
+    roomsRef.current = rooms;
+  }, [rooms]);
 
   // Update refs when callbacks change
   useEffect(() => {
@@ -120,6 +135,52 @@ export function useNegotiationStream({
           // Also update the offers panel
           if (sellerOfferData) {
             updateOffer(roomId, event.seller_id, event.sender_name, sellerOfferData);
+
+            const offersSnapshot = roomsRef.current[roomId]?.offers || {};
+            const offersWithNew = {
+              ...offersSnapshot,
+              [event.seller_id]: { ...sellerOfferData, seller_name: event.sender_name },
+            };
+            const offerList = Object.entries(offersWithNew).map(([sellerId, offer]) => ({
+              sellerId,
+              ...offer,
+            }));
+            const bestOffer = findBestOffer(offerList);
+            if (bestOffer && (!bestOfferRef.current || bestOfferRef.current.sellerId !== bestOffer.sellerId || bestOfferRef.current.price !== bestOffer.price)) {
+              bestOfferRef.current = { sellerId: bestOffer.sellerId, price: bestOffer.price };
+              setRoundBestOffer(roomId, event.round || roomsRef.current[roomId]?.currentRound || 0, {
+                sellerId: bestOffer.sellerId,
+                sellerName: bestOffer.seller_name,
+                price: bestOffer.price,
+              });
+              pushToast({
+                title: 'Best offer updated',
+                description: `${bestOffer.seller_name} at $${bestOffer.price}/unit`,
+                variant: 'info',
+              });
+            }
+          }
+
+          if (event.round) {
+            const startAt = roundStartRef.current[event.round];
+            const responseMs = startAt ? Math.max(0, new Date(event.timestamp).getTime() - new Date(startAt).getTime()) : 0;
+            recordSellerResponse(roomId, event.round, {
+              sellerId: event.seller_id,
+              sellerName: event.sender_name,
+              responseMs,
+              price: sellerOfferData?.price,
+            });
+
+            const roomInfo = negotiationRooms.find((r) => r.room_id === roomId);
+            const totalSellers = roomInfo?.participating_sellers.length || 0;
+            roundResponseCountRef.current[event.round] = (roundResponseCountRef.current[event.round] || 0) + 1;
+            if (totalSellers > 0 && roundResponseCountRef.current[event.round] >= totalSellers) {
+              pushToast({
+                title: `Round ${event.round} complete`,
+                description: `All ${totalSellers} sellers responded`,
+                variant: 'success',
+              });
+            }
           }
           break;
 
@@ -167,10 +228,20 @@ export function useNegotiationStream({
             timestamp: event.timestamp,
             sender_type: 'system',
             sender_name: 'System',
-            message: `🎉 Deal Complete! Selected ${event.chosen_seller_name} at $${event.final_price}/unit for ${event.final_quantity} units. Total: $${event.total_cost}. Reason: ${event.reason || 'Best offer'}`,
+            message: `Deal complete. Selected ${event.chosen_seller_name} at $${event.final_price}/unit for ${event.final_quantity} units. Total: $${event.total_cost}. Reason: ${event.reason || 'Best offer'}`,
             mentioned_agents: [],
           };
           addMessage(roomId, decisionMessage);
+
+          const decisionRound = roomsRef.current[roomId]?.currentRound || 0;
+          if (typeof event.card_savings === 'number') {
+            setRoundCardSavings(roomId, decisionRound, event.card_savings);
+          }
+          pushToast({
+            title: 'Decision reached',
+            description: event.chosen_seller_name ? `Selected ${event.chosen_seller_name}` : 'Negotiation completed',
+            variant: 'success',
+          });
           break;
 
         case 'round_start':
@@ -180,6 +251,14 @@ export function useNegotiationStream({
             current_round: event.round_number,
             max_rounds: event.max_rounds,
             status: NegotiationStatus.ACTIVE,
+          });
+          roundStartRef.current[event.round_number] = event.timestamp;
+          roundResponseCountRef.current[event.round_number] = 0;
+          recordRoundStart(roomId, event.round_number, event.timestamp);
+          pushToast({
+            title: `Round ${event.round_number} started`,
+            description: `Negotiating ${event.max_rounds} rounds`,
+            variant: 'info',
           });
           break;
 
@@ -213,6 +292,11 @@ export function useNegotiationStream({
           if (onCompleteRef.current) {
             onCompleteRef.current(event);
           }
+          pushToast({
+            title: 'Negotiation complete',
+            description: 'Final decision is ready',
+            variant: 'success',
+          });
           break;
 
         case 'error':
@@ -246,7 +330,22 @@ export function useNegotiationStream({
           break;
       }
     },
-    [roomId, addMessage, updateOffer, updateRound, setDecision, setStreaming]
+    [
+      roomId,
+      addMessage,
+      updateOffer,
+      updateRound,
+      setDecision,
+      setStreaming,
+      recordRoundStart,
+      recordSellerResponse,
+      setRoundBestOffer,
+      setRoundCardSavings,
+      updateNegotiationRoom,
+      updateNegotiationRoomStatus,
+      negotiationRooms,
+      pushToast,
+    ]
   );
 
   const cleanupRef = useRef<(() => void) | null>(null);

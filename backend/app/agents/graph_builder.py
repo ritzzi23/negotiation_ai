@@ -33,6 +33,55 @@ from ..utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+def _variant_match(buyer_variant: Optional[str], seller_variant: Optional[str]) -> bool:
+    if not buyer_variant:
+        return True
+    if not seller_variant:
+        return False
+    return buyer_variant.strip().lower() == seller_variant.strip().lower()
+
+
+def _size_match(
+    buyer_value: Optional[float],
+    buyer_unit: Optional[str],
+    seller_value: Optional[float],
+    seller_unit: Optional[str],
+) -> bool:
+    if buyer_value is None and not buyer_unit:
+        return True
+    if seller_value is None or not seller_unit:
+        return False
+    return buyer_value == seller_value and buyer_unit.strip().lower() == seller_unit.strip().lower()
+
+
+def _match_inventory_item(seller, constraints: BuyerConstraints):
+    """Return the inventory item that strictly matches the buyer's product or name."""
+    for item in seller.inventory:
+        if constraints.product_id and getattr(item, "product_id", None):
+            if item.product_id == constraints.product_id and _variant_match(
+                constraints.variant,
+                getattr(item, "variant", None),
+            ) and _size_match(
+                constraints.size_value,
+                constraints.size_unit,
+                getattr(item, "size_value", None),
+                getattr(item, "size_unit", None),
+            ):
+                return item
+            continue
+        if item.item_name.lower().strip() == constraints.item_name.lower().strip() and _variant_match(
+            constraints.variant,
+            getattr(item, "variant", None),
+        ) and _size_match(
+            constraints.size_value,
+            constraints.size_unit,
+            getattr(item, "size_value", None),
+            getattr(item, "size_unit", None),
+        ):
+            return item
+    return None
+
+
 def _get_latest_offers_per_seller(room_state: NegotiationRoomState) -> list:
     """
     Extract latest offer per seller from conversation history.
@@ -54,10 +103,9 @@ def _get_latest_offers_per_seller(room_state: NegotiationRoomState) -> list:
         seller = next((s for s in room_state.sellers if s.seller_id == sid), None)
         cost = None
         if seller:
-            for inv in seller.inventory:
-                if inv.item_name.lower().strip() == room_state.buyer_constraints.item_name.lower().strip():
-                    cost = inv.cost_price
-                    break
+            inv = _match_inventory_item(seller, room_state.buyer_constraints)
+            if inv:
+                cost = inv.cost_price
         latest[sid] = {
             "seller_id": sid,
             "seller_name": msg.get("sender_name", sid),
@@ -205,10 +253,9 @@ class NegotiationGraph:
                     selected_seller_name = selected_seller.name if selected_seller else "Unknown Seller"
                     seller_cost = 0.0
                     if selected_seller:
-                        for inv in selected_seller.inventory:
-                            if inv.item_name.lower().strip() == room_state.buyer_constraints.item_name.lower().strip():
-                                seller_cost = inv.cost_price
-                                break
+                        inv = _match_inventory_item(selected_seller, room_state.buyer_constraints)
+                        if inv:
+                            seller_cost = inv.cost_price
                     total_cost = decision["offer"]["price"] * decision["offer"]["quantity"]
                     effective_total = total_cost
                     recommended_card = None
@@ -426,13 +473,10 @@ class NegotiationGraph:
                     logger.info(f"Getting response from seller {seller.name} (ID: {seller.seller_id}) for item: {room_state.buyer_constraints.item_name}")
                     logger.debug(f"Seller {seller.name} inventory items: {[item.item_name for item in seller.inventory]}")
                     
-                    # Find matching inventory item by item_name (case-insensitive)
-                    inventory_item = None
-                    for item in seller.inventory:
-                        if item.item_name.lower().strip() == room_state.buyer_constraints.item_name.lower().strip():
-                            inventory_item = item
-                            logger.info(f"Found matching inventory item for {seller.name}: {item.item_name}")
-                            break
+                    # Find strictly matching inventory item (product_id preferred)
+                    inventory_item = _match_inventory_item(seller, room_state.buyer_constraints)
+                    if inventory_item:
+                        logger.info(f"Found matching inventory item for {seller.name}: {inventory_item.item_name}")
                     
                     if not inventory_item:
                         logger.warning(f"Seller {seller.name} (ID: {seller.seller_id}) has no inventory for item '{room_state.buyer_constraints.item_name}'. Available items: {[item.item_name for item in seller.inventory]}")
@@ -600,7 +644,7 @@ class NegotiationGraph:
                 continue
             
             if (price >= room_state.buyer_constraints.min_price_per_unit and
-                quantity >= room_state.buyer_constraints.quantity_needed):
+                quantity <= room_state.buyer_constraints.quantity_needed):
                 valid_offers.append({
                     "seller_id": seller_id,
                     "seller_name": seller_id_to_name.get(seller_id, seller_id),

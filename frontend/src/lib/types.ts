@@ -4,6 +4,9 @@ import { SellerPriority, SpeakingStyle, SellerStrategy, NegotiationStatus, Sessi
 export interface ShoppingItem {
   item_id: string;
   item_name: string;
+  variant?: string;
+  size_value?: number;
+  size_unit?: string;
   quantity_needed: number;
   min_price_per_unit: number;
   max_price_per_unit: number;
@@ -18,10 +21,31 @@ export interface BuyerConfig {
 export interface InventoryItem {
   item_id: string;
   item_name: string;
+  variant?: string;
+  size_value?: number;
+  size_unit?: string;
   cost_price: number;
   selling_price: number;
   least_price: number;
   quantity_available: number;
+}
+
+// Product Catalog
+export interface Product {
+  id: string;
+  name: string;
+  sku?: string | null;
+  variant?: string | null;
+  size_value?: number | null;
+  size_unit?: string | null;
+  category?: string | null;
+  description?: string | null;
+  created_at: string;
+}
+
+export interface ProductListResponse {
+  items: Product[];
+  total: number;
 }
 
 export interface SellerProfile {

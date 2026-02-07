@@ -11,6 +11,28 @@ interface NegotiationRoomState {
   decision: BuyerDecision | null;
   isStreaming: boolean;
   stream: EventSource | null;
+  roundTimeline: RoundTimelineEntry[];
+}
+
+interface RoundSellerResponse {
+  sellerId: string;
+  sellerName: string;
+  responseMs: number;
+  price?: number;
+}
+
+interface RoundBestOffer {
+  sellerId: string;
+  sellerName: string;
+  price: number;
+}
+
+interface RoundTimelineEntry {
+  round: number;
+  startedAt?: string;
+  sellerResponses: RoundSellerResponse[];
+  bestOffer?: RoundBestOffer;
+  cardSavings?: number;
 }
 
 interface NegotiationState {
@@ -29,6 +51,22 @@ interface NegotiationContextValue extends NegotiationState {
   connectStream: (roomId: string, stream: EventSource) => void;
   disconnectStream: (roomId: string) => void;
   clearRoom: (roomId: string) => void;
+  recordRoundStart: (roomId: string, round: number, startedAt: string) => void;
+  recordSellerResponse: (
+    roomId: string,
+    round: number,
+    response: RoundSellerResponse
+  ) => void;
+  setRoundBestOffer: (
+    roomId: string,
+    round: number,
+    bestOffer: RoundBestOffer
+  ) => void;
+  setRoundCardSavings: (
+    roomId: string,
+    round: number,
+    cardSavings: number
+  ) => void;
 }
 
 const NegotiationContext = createContext<NegotiationContextValue | undefined>(undefined);
@@ -41,6 +79,7 @@ const initialRoomState: NegotiationRoomState = {
   decision: null,
   isStreaming: false,
   stream: null,
+  roundTimeline: [],
 };
 
 const initialState: NegotiationState = {
@@ -50,6 +89,21 @@ const initialState: NegotiationState = {
 
 export function NegotiationProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<NegotiationState>(initialState);
+
+  const upsertRoundEntry = useCallback(
+    (
+      entries: RoundTimelineEntry[],
+      round: number,
+      updater: (entry: RoundTimelineEntry) => RoundTimelineEntry
+    ) => {
+      const existing = entries.find((item) => item.round === round);
+      if (existing) {
+        return entries.map((item) => (item.round === round ? updater(item) : item));
+      }
+      return [...entries, updater({ round, sellerResponses: [] })].sort((a, b) => a.round - b.round);
+    },
+    []
+  );
 
   const setActiveRoom = useCallback((roomId: string | null) => {
     setState((prev) => ({ ...prev, activeRoomId: roomId }));
@@ -235,6 +289,102 @@ export function NegotiationProvider({ children }: { children: React.ReactNode })
     });
   }, []);
 
+  const recordRoundStart = useCallback(
+    (roomId: string, round: number, startedAt: string) => {
+      setState((prev) => {
+        const room = prev.rooms[roomId];
+        if (!room) return prev;
+        const updatedTimeline = upsertRoundEntry(room.roundTimeline, round, (entry) => ({
+          ...entry,
+          startedAt,
+        }));
+        return {
+          ...prev,
+          rooms: {
+            ...prev.rooms,
+            [roomId]: {
+              ...room,
+              roundTimeline: updatedTimeline,
+            },
+          },
+        };
+      });
+    },
+    [upsertRoundEntry]
+  );
+
+  const recordSellerResponse = useCallback(
+    (roomId: string, round: number, response: RoundSellerResponse) => {
+      setState((prev) => {
+        const room = prev.rooms[roomId];
+        if (!room) return prev;
+        const updatedTimeline = upsertRoundEntry(room.roundTimeline, round, (entry) => ({
+          ...entry,
+          sellerResponses: [...entry.sellerResponses, response],
+        }));
+        return {
+          ...prev,
+          rooms: {
+            ...prev.rooms,
+            [roomId]: {
+              ...room,
+              roundTimeline: updatedTimeline,
+            },
+          },
+        };
+      });
+    },
+    [upsertRoundEntry]
+  );
+
+  const setRoundBestOffer = useCallback(
+    (roomId: string, round: number, bestOffer: RoundBestOffer) => {
+      setState((prev) => {
+        const room = prev.rooms[roomId];
+        if (!room) return prev;
+        const updatedTimeline = upsertRoundEntry(room.roundTimeline, round, (entry) => ({
+          ...entry,
+          bestOffer,
+        }));
+        return {
+          ...prev,
+          rooms: {
+            ...prev.rooms,
+            [roomId]: {
+              ...room,
+              roundTimeline: updatedTimeline,
+            },
+          },
+        };
+      });
+    },
+    [upsertRoundEntry]
+  );
+
+  const setRoundCardSavings = useCallback(
+    (roomId: string, round: number, cardSavings: number) => {
+      setState((prev) => {
+        const room = prev.rooms[roomId];
+        if (!room) return prev;
+        const updatedTimeline = upsertRoundEntry(room.roundTimeline, round, (entry) => ({
+          ...entry,
+          cardSavings,
+        }));
+        return {
+          ...prev,
+          rooms: {
+            ...prev.rooms,
+            [roomId]: {
+              ...room,
+              roundTimeline: updatedTimeline,
+            },
+          },
+        };
+      });
+    },
+    [upsertRoundEntry]
+  );
+
   const value: NegotiationContextValue = {
     ...state,
     setActiveRoom,
@@ -247,6 +397,10 @@ export function NegotiationProvider({ children }: { children: React.ReactNode })
     connectStream,
     disconnectStream,
     clearRoom,
+    recordRoundStart,
+    recordSellerResponse,
+    setRoundBestOffer,
+    setRoundCardSavings,
   };
 
   return <NegotiationContext.Provider value={value}>{children}</NegotiationContext.Provider>;

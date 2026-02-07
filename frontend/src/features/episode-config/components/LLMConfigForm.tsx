@@ -26,8 +26,8 @@ const OPENROUTER_MODELS = [
 ];
 
 const PROVIDERS = [
-  { value: 'lm_studio', label: '🖥️ LM Studio (Local)' },
-  { value: 'openrouter', label: '☁️ OpenRouter (Cloud)' },
+  { value: 'lm_studio', label: 'LM Studio (Local)' },
+  { value: 'openrouter', label: 'OpenRouter (Cloud)' },
 ];
 
 export function LLMConfigForm() {
@@ -140,7 +140,7 @@ export function LLMConfigForm() {
               onInput={(e) => {
                 console.log('[LLMConfigForm] onInput fired:', e);
               }}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors appearance-none bg-white"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-300 transition-colors appearance-none bg-white"
             >
               {PROVIDERS.map((provider) => (
                 <option key={provider.value} value={provider.value}>
@@ -150,8 +150,8 @@ export function LLMConfigForm() {
             </select>
             <div className="mt-2 flex items-center gap-4">
               <p className="text-xs text-neutral-500">
-                Display: <strong className="text-blue-600">{currentProvider}</strong> | 
-                Stored: <strong className="text-green-600">{llmConfig.provider || 'undefined'}</strong>
+                Display: <strong className="text-primary-700">{currentProvider}</strong> | 
+                Stored: <strong className="text-neutral-700">{llmConfig.provider || 'undefined'}</strong>
               </p>
               <button
                 type="button"
@@ -159,7 +159,7 @@ export function LLMConfigForm() {
                   console.log('[LLMConfigForm] MANUAL BUTTON CLICKED - Switching to OpenRouter');
                   handleProviderChange('openrouter');
                 }}
-                className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="px-3 py-1 text-xs border border-neutral-300 text-neutral-700 rounded-full hover:bg-neutral-100"
               >
                 Test: Force OpenRouter
               </button>
@@ -169,7 +169,7 @@ export function LLMConfigForm() {
                   console.log('[LLMConfigForm] MANUAL BUTTON CLICKED - Switching to LM Studio');
                   handleProviderChange('lm_studio');
                 }}
-                className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                className="px-3 py-1 text-xs border border-neutral-300 text-neutral-700 rounded-full hover:bg-neutral-100"
               >
                 Test: Force LM Studio
               </button>
@@ -217,32 +217,32 @@ export function LLMConfigForm() {
 
           {/* Info */}
           {currentProvider === 'lm_studio' ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4">
               <div className="flex items-start">
-                <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-primary-700 mt-0.5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                  <h4 className="text-sm font-medium text-blue-900 mb-1">🖥️ LM Studio Setup</h4>
-                  <p className="text-sm text-blue-700">
+                  <h4 className="text-sm font-medium text-neutral-900 mb-1">LM Studio Setup</h4>
+                  <p className="text-sm text-neutral-600">
                     Make sure LM Studio is running on{' '}
-                    <code className="bg-blue-100 px-1 rounded">http://localhost:1234</code> with the selected model loaded.
+                    <code className="bg-neutral-100 px-1 rounded">http://localhost:1234</code> with the selected model loaded.
                     All inference happens locally on your machine.
                   </p>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4">
               <div className="flex items-start">
-                <svg className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-secondary-700 mt-0.5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                  <h4 className="text-sm font-medium text-green-900 mb-1">☁️ OpenRouter Setup</h4>
-                  <p className="text-sm text-green-700">
+                  <h4 className="text-sm font-medium text-neutral-900 mb-1">OpenRouter Setup</h4>
+                  <p className="text-sm text-neutral-600">
                     Using cloud inference via OpenRouter. Make sure your API key is configured in the backend{' '}
-                    <code className="bg-green-100 px-1 rounded">.env</code> file. Free models are available!
+                    <code className="bg-neutral-100 px-1 rounded">.env</code> file. Free models are available!
                   </p>
                 </div>
               </div>

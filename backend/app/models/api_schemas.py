@@ -14,10 +14,79 @@ import uuid
 
 # Request Models
 
+class ProductBase(BaseModel):
+    """Product catalog fields."""
+    name: str = Field(..., min_length=1, max_length=100)
+    sku: Optional[str] = Field(None, max_length=100)
+    variant: Optional[str] = Field(None, max_length=100)
+    size_value: Optional[float] = Field(None, gt=0)
+    size_unit: Optional[str] = Field(None, max_length=20)
+    category: Optional[str] = Field(None, max_length=50)
+    description: Optional[str] = Field(None, max_length=500)
+
+    @field_validator("size_unit")
+    @classmethod
+    def validate_size_unit(cls, v, info):
+        if v and not info.data.get("size_value"):
+            raise ValueError("size_value is required when size_unit is provided")
+        return v
+
+    @field_validator("size_value")
+    @classmethod
+    def validate_size_value(cls, v, info):
+        if v is not None and not info.data.get("size_unit"):
+            raise ValueError("size_unit is required when size_value is provided")
+        return v
+
+
+class ProductCreate(ProductBase):
+    """Create a new product (id optional)."""
+    id: Optional[str] = Field(None, min_length=1, max_length=50)
+
+
+class ProductUpdate(BaseModel):
+    """Update fields for a product."""
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    sku: Optional[str] = Field(None, max_length=100)
+    variant: Optional[str] = Field(None, max_length=100)
+    size_value: Optional[float] = Field(None, gt=0)
+    size_unit: Optional[str] = Field(None, max_length=20)
+    category: Optional[str] = Field(None, max_length=50)
+    description: Optional[str] = Field(None, max_length=500)
+
+    @field_validator("size_unit")
+    @classmethod
+    def validate_update_size_unit(cls, v, info):
+        if v and not info.data.get("size_value"):
+            raise ValueError("size_value is required when size_unit is provided")
+        return v
+
+    @field_validator("size_value")
+    @classmethod
+    def validate_update_size_value(cls, v, info):
+        if v is not None and not info.data.get("size_unit"):
+            raise ValueError("size_unit is required when size_value is provided")
+        return v
+
+
+class ProductResponse(ProductBase):
+    """Product response model."""
+    id: str
+    created_at: datetime
+
+
+class ProductListResponse(BaseModel):
+    """List response for products."""
+    items: List[ProductResponse]
+    total: int
+
 class ShoppingItem(BaseModel):
     """Shopping list item."""
     item_id: str = Field(..., min_length=1, max_length=50)
     item_name: str = Field(..., min_length=1, max_length=100)
+    variant: Optional[str] = Field(None, max_length=100)
+    size_value: Optional[float] = Field(None, gt=0)
+    size_unit: Optional[str] = Field(None, max_length=20)
     quantity_needed: int = Field(..., gt=0)
     min_price_per_unit: float = Field(..., ge=0)
     max_price_per_unit: float = Field(..., gt=0)
@@ -27,6 +96,20 @@ class ShoppingItem(BaseModel):
     def validate_max_price(cls, v, info):
         if "min_price_per_unit" in info.data and v <= info.data["min_price_per_unit"]:
             raise ValueError("max_price_per_unit must be greater than min_price_per_unit")
+        return v
+
+    @field_validator("size_unit")
+    @classmethod
+    def validate_item_size_unit(cls, v, info):
+        if v and not info.data.get("size_value"):
+            raise ValueError("size_value is required when size_unit is provided")
+        return v
+
+    @field_validator("size_value")
+    @classmethod
+    def validate_item_size_value(cls, v, info):
+        if v is not None and not info.data.get("size_unit"):
+            raise ValueError("size_unit is required when size_value is provided")
         return v
 
 
@@ -40,6 +123,9 @@ class InventoryItem(BaseModel):
     """Seller inventory item."""
     item_id: str = Field(..., min_length=1, max_length=50)
     item_name: str = Field(..., min_length=1, max_length=100)
+    variant: Optional[str] = Field(None, max_length=100)
+    size_value: Optional[float] = Field(None, gt=0)
+    size_unit: Optional[str] = Field(None, max_length=20)
     cost_price: float = Field(..., ge=0)
     selling_price: float = Field(..., gt=0)
     least_price: float = Field(..., gt=0)
@@ -59,6 +145,20 @@ class InventoryItem(BaseModel):
             raise ValueError("least_price must be greater than cost_price")
         if "selling_price" in info.data and v >= info.data["selling_price"]:
             raise ValueError("least_price must be less than selling_price")
+        return v
+
+    @field_validator("size_unit")
+    @classmethod
+    def validate_inventory_size_unit(cls, v, info):
+        if v and not info.data.get("size_value"):
+            raise ValueError("size_value is required when size_unit is provided")
+        return v
+
+    @field_validator("size_value")
+    @classmethod
+    def validate_inventory_size_value(cls, v, info):
+        if v is not None and not info.data.get("size_unit"):
+            raise ValueError("size_unit is required when size_value is provided")
         return v
 
 

@@ -17,7 +17,7 @@ export function LoadingSpinner({ size = 'md', className, label }: LoadingSpinner
   return (
     <div className={clsx('flex flex-col items-center justify-center', className)}>
       <svg
-        className={clsx('animate-spin text-primary-500', sizeClasses[size])}
+        className={clsx('animate-spin text-primary-700', sizeClasses[size])}
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"

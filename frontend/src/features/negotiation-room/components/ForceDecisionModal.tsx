@@ -155,7 +155,7 @@ export function ForceDecisionModal({
                       : 'border-neutral-200 hover:border-neutral-300'
                   }`}
                 >
-                  <span className="font-medium">✅ Accept Deal</span>
+                  <span className="font-medium">Accept Deal</span>
                 </button>
                 <button
                   type="button"
@@ -166,7 +166,7 @@ export function ForceDecisionModal({
                       : 'border-neutral-200 hover:border-neutral-300'
                   }`}
                 >
-                  <span className="font-medium">❌ Reject All</span>
+                  <span className="font-medium">Reject All</span>
                 </button>
               </div>
             </div>

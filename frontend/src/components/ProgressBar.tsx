@@ -21,10 +21,10 @@ export function ProgressBar({
   const clampedProgress = Math.min(100, Math.max(0, progress));
 
   const variantClasses = {
-    primary: 'bg-primary-500',
-    secondary: 'bg-secondary-500',
-    warning: 'bg-warning-500',
-    danger: 'bg-danger-500',
+    primary: 'bg-primary-700',
+    secondary: 'bg-secondary-600',
+    warning: 'bg-warning-600',
+    danger: 'bg-danger-600',
   };
 
   const sizeClasses = {

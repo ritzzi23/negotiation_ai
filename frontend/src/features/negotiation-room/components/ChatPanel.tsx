@@ -18,13 +18,13 @@ function BuyerMessage({ message }: { message: Message }) {
     <div className="flex justify-start mb-4 animate-slide-in">
       <div className="max-w-[80%]">
         <div className="flex items-center space-x-2 mb-1">
-          <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+          <div className="w-8 h-8 bg-primary-800 rounded-full flex items-center justify-center text-white text-sm font-bold">
             B
           </div>
           <span className="text-sm font-medium text-neutral-700">{message.sender_name}</span>
           <span className="text-xs text-neutral-500">{formatTimestamp(message.timestamp)}</span>
         </div>
-        <div className="bg-primary-100 text-primary-900 rounded-lg rounded-tl-none px-4 py-2">
+        <div className="bg-neutral-100 text-neutral-900 rounded-2xl rounded-tl-none px-4 py-2">
           {displayMessage}
         </div>
       </div>
@@ -49,12 +49,12 @@ function SellerMessage({ message, sellerIndex }: { message: Message; sellerIndex
             S
           </div>
         </div>
-        <div className="bg-neutral-100 text-neutral-900 rounded-lg rounded-tr-none px-4 py-2">
+        <div className="bg-white text-neutral-900 rounded-2xl rounded-tr-none px-4 py-2 border border-neutral-200">
           <div dangerouslySetInnerHTML={{ __html: highlightMentions(displayMessage) }} />
           {message.updated_offer && (
-            <div className="mt-2 pt-2 border-t border-neutral-300">
-              <p className="text-sm font-semibold text-secondary-600">
-                💰 Offer: ${message.updated_offer.price}/unit (x{message.updated_offer.quantity})
+            <div className="mt-2 pt-2 border-t border-neutral-200">
+              <p className="text-sm font-semibold text-secondary-700">
+                Offer: ${message.updated_offer.price}/unit (x{message.updated_offer.quantity})
               </p>
             </div>
           )}
@@ -67,7 +67,7 @@ function SellerMessage({ message, sellerIndex }: { message: Message; sellerIndex
 function SystemMessage({ message }: { message: Message }) {
   return (
     <div className="flex justify-center mb-4">
-      <div className="bg-neutral-200 text-neutral-700 rounded-full px-4 py-1 text-sm">
+      <div className="bg-neutral-100 text-neutral-600 rounded-full px-4 py-1 text-sm border border-neutral-200">
         {message.message}
       </div>
     </div>

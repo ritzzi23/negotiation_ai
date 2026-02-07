@@ -8,7 +8,7 @@ HOW: Include routers from endpoints with prefixes
 
 from fastapi import APIRouter
 
-from .endpoints import status, simulation, negotiation, streaming, logs, mobile, credit_card_info
+from .endpoints import status, simulation, negotiation, streaming, logs, mobile, credit_card_info, products
 
 # Create main v1 router
 api_router = APIRouter()
@@ -54,4 +54,10 @@ api_router.include_router(
     credit_card_info.router,
     prefix="/api/v1",
     tags=["credit-card-info"]
+)
+
+api_router.include_router(
+    products.router,
+    prefix="/api/v1",
+    tags=["products"]
 )

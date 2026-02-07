@@ -11,12 +11,12 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'info', className }: BadgeProps) {
   const variantClasses = {
-    pending: 'bg-neutral-100 text-neutral-700 border-neutral-300',
-    active: 'bg-primary-100 text-primary-700 border-primary-300',
-    completed: 'bg-secondary-100 text-secondary-700 border-secondary-300',
-    failed: 'bg-danger-100 text-danger-700 border-danger-300',
-    warning: 'bg-warning-100 text-warning-700 border-warning-300',
-    info: 'bg-blue-100 text-blue-700 border-blue-300',
+    pending: 'bg-neutral-100 text-neutral-700 border-neutral-200',
+    active: 'bg-primary-50 text-primary-700 border-primary-100',
+    completed: 'bg-secondary-50 text-secondary-700 border-secondary-100',
+    failed: 'bg-danger-50 text-danger-700 border-danger-100',
+    warning: 'bg-warning-50 text-warning-700 border-warning-100',
+    info: 'bg-neutral-100 text-neutral-700 border-neutral-200',
   };
 
   return (

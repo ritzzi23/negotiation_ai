@@ -5,6 +5,21 @@ export interface ValidationError {
   message: string;
 }
 
+function validateSizeFields(sizeValue?: number, sizeUnit?: string): ValidationError | null {
+  const hasValue = sizeValue !== undefined && sizeValue !== null;
+  const hasUnit = !!sizeUnit && sizeUnit.trim() !== '';
+  if (hasValue && sizeValue !== undefined && sizeValue !== null && sizeValue <= 0) {
+    return { field: 'size_value', message: 'Size value must be greater than 0' };
+  }
+  if (hasValue && !hasUnit) {
+    return { field: 'size_unit', message: 'Size unit is required when size value is provided' };
+  }
+  if (hasUnit && !hasValue) {
+    return { field: 'size_value', message: 'Size value is required when size unit is provided' };
+  }
+  return null;
+}
+
 /**
  * Validate that min price is less than max price
  */
@@ -25,6 +40,8 @@ export function validatePriceRange(minPrice: number, maxPrice: number): Validati
  * Validate seller inventory item pricing
  */
 export function validateSellerInventory(item: InventoryItem): ValidationError | null {
+  const sizeError = validateSizeFields(item.size_value, item.size_unit);
+  if (sizeError) return sizeError;
   if (item.cost_price < 0) {
     return { field: 'cost_price', message: 'Cost price cannot be negative' };
   }
@@ -47,6 +64,8 @@ export function validateSellerInventory(item: InventoryItem): ValidationError | 
  * Validate shopping item
  */
 export function validateShoppingItem(item: ShoppingItem): ValidationError | null {
+  const sizeError = validateSizeFields(item.size_value, item.size_unit);
+  if (sizeError) return sizeError;
   if (!item.item_name || item.item_name.trim() === '') {
     return { field: 'item_name', message: 'Item name is required' };
   }

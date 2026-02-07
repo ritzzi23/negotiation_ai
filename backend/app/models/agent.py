@@ -42,6 +42,10 @@ class BuyerConstraints:
     quantity_needed: int
     min_price_per_unit: float
     max_price_per_unit: float
+    product_id: Optional[str] = None
+    variant: Optional[str] = None
+    size_value: Optional[float] = None
+    size_unit: Optional[str] = None
 
 
 @dataclass
@@ -53,6 +57,10 @@ class InventoryItem:
     selling_price: float
     least_price: float  # Minimum price seller can accept
     quantity_available: int
+    product_id: Optional[str] = None
+    variant: Optional[str] = None
+    size_value: Optional[float] = None
+    size_unit: Optional[str] = None
 
 
 @dataclass

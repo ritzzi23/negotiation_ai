@@ -63,7 +63,7 @@ export default function AdminPage() {
 
     const errors = validateEpisodeConfig(selectedBuyer, selectedSellers);
     if (errors.length > 0) {
-      setError(`Configuration errors:\n${errors.map((e) => `• ${e.field}: ${e.message}`).join('\n')}`);
+      setError(`Configuration errors:\n${errors.map((e) => `- ${e.field}: ${e.message}`).join('\n')}`);
       return;
     }
 
@@ -216,7 +216,7 @@ export default function AdminPage() {
           href={ROUTES.ADMIN_CREDIT_CARD_INFO}
           className="block mb-6 p-5 rounded-xl border-2 border-primary-200 bg-primary-50/50 hover:bg-primary-50 hover:border-primary-300 transition-colors"
         >
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center shrink-0">
               <svg className="w-6 h-6 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -228,7 +228,7 @@ export default function AdminPage() {
                 Upload card benefit documents, add card data for retrieval, and manage the RAG index. Supports multiple cards and clear/delete by id.
               </p>
             </div>
-            <span className="text-primary-600 font-medium shrink-0">Manage →</span>
+            <span className="text-primary-600 font-medium shrink-0">Manage &gt;</span>
           </div>
         </Link>
 
@@ -248,9 +248,9 @@ export default function AdminPage() {
                 <h3 className="text-sm font-medium text-neutral-700 mb-2">Existing buyers</h3>
                 <ul className="space-y-2">
                   {buyers.map((b, i) => (
-                    <li key={i} className="flex items-center justify-between py-1.5">
+                    <li key={i} className="flex flex-col gap-2 py-1.5 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-sm">{b.name}</span>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <Button variant="secondary" size="sm" onClick={() => setEditingBuyerIndex(i)} disabled={editingBuyerIndex !== null}>
                           Edit
                         </Button>
@@ -278,9 +278,9 @@ export default function AdminPage() {
                 <h3 className="text-sm font-medium text-neutral-700 mb-2">Existing sellers</h3>
                 <ul className="space-y-2">
                   {sellers.map((s, i) => (
-                    <li key={i} className="flex items-center justify-between py-1.5">
+                    <li key={i} className="flex flex-col gap-2 py-1.5 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-sm">{s.name}</span>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <Button variant="secondary" size="sm" onClick={() => setEditingSellerIndex(i)} disabled={editingSellerIndex !== null}>
                           Edit
                         </Button>

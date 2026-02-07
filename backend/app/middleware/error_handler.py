@@ -25,6 +25,7 @@ from ..utils.exceptions import (
     NegotiationAlreadyActiveError,
     MaxSellersExceededError,
     InsufficientInventoryError,
+    ProductNotFoundError,
 )
 from ..utils.logger import get_logger
 
@@ -160,7 +161,7 @@ async def api_exception_handler(request: Request, exc: APIException):
     """
     status_code = status.HTTP_400_BAD_REQUEST
     
-    if isinstance(exc, (SessionNotFoundError, RoomNotFoundError)):
+    if isinstance(exc, (SessionNotFoundError, RoomNotFoundError, ProductNotFoundError)):
         status_code = status.HTTP_404_NOT_FOUND
     elif isinstance(exc, NegotiationAlreadyActiveError):
         status_code = status.HTTP_409_CONFLICT

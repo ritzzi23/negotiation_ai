@@ -14,6 +14,27 @@ from ..utils.logger import get_logger
 logger = get_logger(__name__)
 
 
+def _variant_match(buyer_variant: Optional[str], seller_variant: Optional[str]) -> bool:
+    if not buyer_variant:
+        return True
+    if not seller_variant:
+        return False
+    return buyer_variant.strip().lower() == seller_variant.strip().lower()
+
+
+def _size_match(
+    buyer_value: Optional[float],
+    buyer_unit: Optional[str],
+    seller_value: Optional[float],
+    seller_unit: Optional[str],
+) -> bool:
+    if buyer_value is None and not buyer_unit:
+        return True
+    if seller_value is None or not seller_unit:
+        return False
+    return buyer_value == seller_value and buyer_unit.strip().lower() == seller_unit.strip().lower()
+
+
 def select_sellers_for_item(
     buyer_item: BuyerItem,
     sellers: List[Seller],
@@ -40,12 +61,29 @@ def select_sellers_for_item(
     skipped_reasons = []
     
     for seller, inventory_list in zip(sellers, seller_inventories):
-        # Find matching inventory item by item_name (case-insensitive)
+        # Find matching inventory item by product_id (strict) or exact item_name
         matching_inventory = None
         for inv in inventory_list:
+            if buyer_item.product_id:
+                if inv.product_id and inv.product_id == buyer_item.product_id:
+                    if _variant_match(buyer_item.variant, inv.variant) and _size_match(
+                        buyer_item.size_value,
+                        buyer_item.size_unit,
+                        inv.size_value,
+                        inv.size_unit,
+                    ):
+                        matching_inventory = inv
+                        break
+                continue
             if inv.item_name.lower().strip() == buyer_item.item_name.lower().strip():
-                matching_inventory = inv
-                break
+                if _variant_match(buyer_item.variant, inv.variant) and _size_match(
+                    buyer_item.size_value,
+                    buyer_item.size_unit,
+                    inv.size_value,
+                    inv.size_unit,
+                ):
+                    matching_inventory = inv
+                    break
         
         if not matching_inventory:
             skipped_reasons.append({
@@ -100,7 +138,10 @@ def select_sellers_from_models(
     quantity_needed: int,
     min_price: float,
     max_price: float,
-    sellers: List[SellerModel]
+    sellers: List[SellerModel],
+    buyer_variant: Optional[str] = None,
+    buyer_size_value: Optional[float] = None,
+    buyer_size_unit: Optional[str] = None,
 ) -> Tuple[List[SellerModel], List[dict]]:
     """
     Select sellers from in-memory Seller models (for Phase 2 compatibility).
@@ -120,12 +161,27 @@ def select_sellers_from_models(
     skipped_reasons = []
     
     for seller in sellers:
-        # Find matching inventory item by item_name (case-insensitive)
+        # Find matching inventory item by product_id when available, else exact item_name
         matching_inventory = None
         for inv in seller.inventory:
+            if getattr(inv, "product_id", None) and buyer_item_id and inv.product_id == buyer_item_id:
+                if _variant_match(buyer_variant, getattr(inv, "variant", None)) and _size_match(
+                    buyer_size_value,
+                    buyer_size_unit,
+                    getattr(inv, "size_value", None),
+                    getattr(inv, "size_unit", None),
+                ):
+                    matching_inventory = inv
+                    break
             if inv.item_name.lower().strip() == buyer_item_name.lower().strip():
-                matching_inventory = inv
-                break
+                if _variant_match(buyer_variant, getattr(inv, "variant", None)) and _size_match(
+                    buyer_size_value,
+                    buyer_size_unit,
+                    getattr(inv, "size_value", None),
+                    getattr(inv, "size_unit", None),
+                ):
+                    matching_inventory = inv
+                    break
         
         if not matching_inventory:
             skipped_reasons.append({

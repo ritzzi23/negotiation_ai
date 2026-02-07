@@ -63,8 +63,12 @@ async def analyze_negotiation_run(
         buyer_name = buyer.name if buyer else "Unknown Buyer"
         
         constraints = BuyerConstraints(
+            product_id=buyer_item.product_id,
             item_id=buyer_item.item_id,
             item_name=buyer_item.item_name,
+            variant=buyer_item.variant,
+            size_value=buyer_item.size_value,
+            size_unit=buyer_item.size_unit,
             quantity_needed=buyer_item.quantity_needed,
             min_price_per_unit=buyer_item.min_price_per_unit,
             max_price_per_unit=buyer_item.max_price_per_unit

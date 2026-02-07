@@ -109,16 +109,18 @@ export default function SummaryPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-secondary-100 rounded-full mb-4">
-            <span className="text-3xl">🎊</span>
+            <svg className="w-7 h-7 text-secondary-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
           </div>
-          <h1 className="text-4xl font-bold text-neutral-900 mb-2">Episode Complete!</h1>
+          <h1 className="text-4xl font-bold text-neutral-900 mb-2">Episode Complete</h1>
           <p className="text-neutral-600">Your negotiation summary is ready</p>
         </div>
 
         {/* Episode Summary Card */}
         <Card className="mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-neutral-900 mb-6">📋 Episode Summary</h2>
+            <h2 className="text-2xl font-bold text-neutral-900 mb-6">Episode Summary</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
                 <p className="text-sm text-neutral-600 mb-1">Episode ID</p>
@@ -154,7 +156,7 @@ export default function SummaryPage() {
         {summary.overall_analysis && (
           <Card className="mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-neutral-900 mb-4">🤖 AI Analysis</h2>
+              <h2 className="text-2xl font-bold text-neutral-900 mb-4">AI Analysis</h2>
               <div className="space-y-4">
                 <div>
                   <h3 className="text-sm font-semibold text-neutral-700 mb-2">Performance Insights</h3>
@@ -169,7 +171,7 @@ export default function SummaryPage() {
                   <ul className="space-y-2">
                     {summary.overall_analysis.recommendations.map((rec, i) => (
                       <li key={i} className="flex items-start space-x-2">
-                        <span className="text-primary-600 font-bold mt-0.5">•</span>
+                        <span className="text-primary-600 font-bold mt-0.5">-</span>
                         <span className="text-neutral-900">{rec}</span>
                       </li>
                     ))}
@@ -188,7 +190,7 @@ export default function SummaryPage() {
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-neutral-900">
-                      ✅ Successful Purchases ({summary.purchases.length})
+                      Successful Purchases ({summary.purchases.length})
                     </h2>
                   </div>
                   <div className="space-y-4">
@@ -205,7 +207,7 @@ export default function SummaryPage() {
                             </div>
                             <Badge variant="completed">Completed</Badge>
                           </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-3">
                             <div>
                               <p className="text-neutral-600">Final Price</p>
                               <p className="font-semibold text-neutral-900">
@@ -240,7 +242,7 @@ export default function SummaryPage() {
                                 className="flex items-center justify-between w-full text-left"
                               >
                                 <span className="text-sm font-semibold text-neutral-700">
-                                  🤖 AI Negotiation Insights
+                                  AI Negotiation Insights
                                 </span>
                                 <svg
                                   className={`w-5 h-5 text-neutral-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -257,35 +259,35 @@ export default function SummaryPage() {
                                   <div>
                                     <p className="text-neutral-900 italic mb-3">"{purchase.ai_summary.narrative}"</p>
                                     <div className="inline-block px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-xs font-semibold">
-                                      🏆 {purchase.ai_summary.deal_winner}
+                                      {purchase.ai_summary.deal_winner}
                                     </div>
                                   </div>
                                   
                                   {/* Buyer & Seller Analysis Side by Side */}
-                                  <div className="grid grid-cols-2 gap-3">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                                      <p className="font-semibold text-blue-900 mb-2">👤 Buyer Performance</p>
+                                      <p className="font-semibold text-blue-900 mb-2">Buyer Performance</p>
                                       <div className="space-y-2">
                                         <div>
-                                          <p className="text-xs font-semibold text-blue-700">✅ What Went Well</p>
+                                          <p className="text-xs font-semibold text-blue-700">What Went Well</p>
                                           <p className="text-xs text-blue-900">{purchase.ai_summary.buyer_analysis.what_went_well}</p>
                                         </div>
                                         <div>
-                                          <p className="text-xs font-semibold text-blue-700">💡 Can Improve</p>
+                                          <p className="text-xs font-semibold text-blue-700">Can Improve</p>
                                           <p className="text-xs text-blue-900">{purchase.ai_summary.buyer_analysis.what_to_improve}</p>
                                         </div>
                                       </div>
                                     </div>
                                     
                                     <div className="bg-green-50 p-3 rounded border border-green-200">
-                                      <p className="font-semibold text-green-900 mb-2">🏪 Seller Performance</p>
+                                      <p className="font-semibold text-green-900 mb-2">Seller Performance</p>
                                       <div className="space-y-2">
                                         <div>
-                                          <p className="text-xs font-semibold text-green-700">✅ What Went Well</p>
+                                          <p className="text-xs font-semibold text-green-700">What Went Well</p>
                                           <p className="text-xs text-green-900">{purchase.ai_summary.seller_analysis.what_went_well}</p>
                                         </div>
                                         <div>
-                                          <p className="text-xs font-semibold text-green-700">💡 Can Improve</p>
+                                          <p className="text-xs font-semibold text-green-700">Can Improve</p>
                                           <p className="text-xs text-green-900">{purchase.ai_summary.seller_analysis.what_to_improve}</p>
                                         </div>
                                       </div>
@@ -302,7 +304,7 @@ export default function SummaryPage() {
                                     <ul className="space-y-1">
                                       {purchase.ai_summary.highlights.turning_points.map((point, i) => (
                                         <li key={i} className="flex items-start space-x-2">
-                                          <span className="text-primary-600">→</span>
+                                          <span className="text-primary-600">-</span>
                                           <span className="text-neutral-900">{point}</span>
                                         </li>
                                       ))}
@@ -336,7 +338,7 @@ export default function SummaryPage() {
               <Card>
                 <div>
                   <h2 className="text-xl font-bold text-neutral-900 mb-6">
-                    ❌ Failed Items ({summary.failed_items.length})
+                    Failed Items ({summary.failed_items.length})
                   </h2>
                   <div className="space-y-3">
                     {summary.failed_items.map((item, index) => (
@@ -363,7 +365,7 @@ export default function SummaryPage() {
             {/* Episode Metrics */}
             <Card>
               <div>
-                <h3 className="text-lg font-bold text-neutral-900 mb-4">📊 Episode Metrics</h3>
+                <h3 className="text-lg font-bold text-neutral-900 mb-4">Episode Metrics</h3>
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-neutral-600">Success Rate</p>

@@ -19,7 +19,7 @@ export function ErrorMessage({
   return (
     <div
       className={clsx(
-        'bg-danger-50 border border-danger-200 rounded-lg p-4',
+        'bg-danger-50 border border-danger-100 rounded-xl p-4',
         className
       )}
     >
